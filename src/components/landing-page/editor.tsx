@@ -23,6 +23,8 @@ import { BlockList } from "./block-list"
 import { MetadataForm } from "./metadata-form"
 import { generateHtml } from "@/utils/html-generator"
 
+import { Slider } from "@/components/ui/slider"
+
 export function LandingPageEditor() {
     const [metadata, setMetadata] = useState<LandingPageMetadata>({
         title1: "",
@@ -32,6 +34,7 @@ export function LandingPageEditor() {
         period: ""
     })
     const [blocks, setBlocks] = useState<Block[]>([])
+    const [previewWidth, setPreviewWidth] = useState(480)
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -90,47 +93,80 @@ export function LandingPageEditor() {
     }
 
     return (
-        <div className="mx-auto max-w-3xl space-y-8">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">Landing Page Builder</h1>
-                <Button onClick={handleDownload} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Download HTML
-                </Button>
-            </div>
+        <div className="mx-auto max-w-[1600px] p-6">
+            <div className="grid grid-cols-1 gap-16 lg:grid-cols-2">
+                {/* Editor Column */}
+                <div className="space-y-8">
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-2xl font-bold">K-공감 콘텐츠 등록</h1>
+                    </div>
 
-            <MetadataForm metadata={metadata} onChange={setMetadata} />
+                    <MetadataForm metadata={metadata} onChange={setMetadata} />
 
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold">Content Blocks</h2>
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleAddBlock('main')}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            기본
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleAddBlock('benefit')}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            혜택
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => handleAddBlock('image')}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            이미지
-                        </Button>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-lg font-semibold">내용</h2>
+                            <div className="flex gap-2">
+                                <Button variant="outline" size="sm" className="bg-white" onClick={() => handleAddBlock('main')}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    기본
+                                </Button>
+                                <Button variant="outline" size="sm" className="bg-white" onClick={() => handleAddBlock('benefit')}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    혜택
+                                </Button>
+                                <Button variant="outline" size="sm" className="bg-white" onClick={() => handleAddBlock('image')}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    이미지
+                                </Button>
+                            </div>
+                        </div>
+
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                        >
+                            <BlockList
+                                blocks={blocks}
+                                onUpdate={handleUpdateBlock}
+                                onRemove={handleRemoveBlock}
+                            />
+                        </DndContext>
                     </div>
                 </div>
 
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                >
-                    <BlockList
-                        blocks={blocks}
-                        onUpdate={handleUpdateBlock}
-                        onRemove={handleRemoveBlock}
-                    />
-                </DndContext>
+                {/* Preview Column */}
+                <div className="hidden lg:block relative">
+                    <div className="sticky top-8 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-lg font-semibold">미리보기</h2>
+                            <div className="flex items-center gap-4 w-1/2">
+                                <span className="text-sm text-muted-foreground whitespace-nowrap">너비: {previewWidth}px</span>
+                                <Slider
+                                    value={[previewWidth]}
+                                    min={320}
+                                    max={800}
+                                    step={10}
+                                    onValueChange={([val]) => setPreviewWidth(val)}
+                                    className="w-full"
+                                />
+                            </div>
+                        </div>
+                        <div className="overflow-hidden rounded-xl border bg-muted/20 shadow-sm flex justify-center p-8 bg-gray-100 h-[calc(100vh-220px)] min-h-[500px]">
+                            <iframe
+                                srcDoc={generateHtml(metadata, blocks)}
+                                style={{ width: `${previewWidth}px` }}
+                                className="h-full bg-white shadow-2xl transition-all duration-300"
+                                title="Landing Page Preview"
+                            />
+                        </div>
+                        <Button onClick={handleDownload} className="w-full gap-2" size="lg">
+                            <Download className="h-4 w-4" />
+                            Download HTML
+                        </Button>
+                    </div>
+                </div>
             </div>
         </div>
     )

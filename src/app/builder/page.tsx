@@ -9,7 +9,7 @@ export default function BuilderPage() {
                 <div>
                     <h3 className="text-lg font-medium">Landing Page Builder</h3>
                     <p className="text-sm text-muted-foreground">
-                        Construct your landing page by adding and reordering blocks.
+                        your landing page by adding and reordering blocks.
                     </p>
                 </div>
                 <Separator />

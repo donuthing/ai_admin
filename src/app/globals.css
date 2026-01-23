@@ -13,8 +13,8 @@
   --popover: 0 0% 100%;
   --popover-foreground: 240 10% 3.9%;
 
-  /* System Blue */
-  --primary: 211 100% 50%;
+  /* System Blue -> Navy #1A3A6D */
+  --primary: 217 61.5% 26.5%;
   --primary-foreground: 0 0% 100%;
 
   /* Light Gray for Secondary Elements */
@@ -33,7 +33,7 @@
   /* Lighter Gray for Borders (96%) */
   --border: 240 5.9% 96%;
   --input: 240 5.9% 96%;
-  --ring: 211 100% 50%;
+  --ring: 217 61.5% 26.5%;
 
   --radius: 0.75rem;
 }
@@ -49,7 +49,7 @@
   --popover: 240 10% 3.9%;
   --popover-foreground: 0 0% 98%;
 
-  --primary: 211 100% 50%;
+  --primary: 217 61.5% 26.5%;
   --primary-foreground: 0 0% 100%;
 
   --secondary: 240 3.7% 15.9%;
@@ -66,7 +66,7 @@
 
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
-  --ring: 211 100% 50%;
+  --ring: 217 61.5% 26.5%;
 }
 
 @theme inline {

@@ -11,7 +11,8 @@ interface MetadataFormProps {
 export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
     return (
         <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Basic Information</h2>
+            <h2 className="text-lg font-semibold">기본 정보
+            </h2>
             <Card>
                 <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
