@@ -58,6 +58,8 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                         </div>
                     </div>
 
+
+
                     <div className="space-y-2">
                         <Label>Main Image URL</Label>
                         <Input
@@ -68,6 +70,6 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                     </div>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     )
 }

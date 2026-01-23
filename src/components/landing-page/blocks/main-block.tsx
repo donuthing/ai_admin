@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { Label } from "@/components/ui/label"
 import { MainBlockContent } from "../types"
 
@@ -21,9 +21,9 @@ export function MainBlockForm({ content, onChange }: MainBlockFormProps) {
             </div>
             <div className="space-y-2">
                 <Label>Content</Label>
-                <Textarea
+                <RichTextEditor
                     value={content.content}
-                    onChange={(e) => onChange({ ...content, content: e.target.value })}
+                    onChange={(value) => onChange({ ...content, content: value })}
                     placeholder="Detailed description..."
                 />
             </div>

@@ -1,6 +1,6 @@
 import { Plus, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { BenefitBlockContent, BenefitItemContent } from "../types"
@@ -63,11 +63,10 @@ export function BenefitBlockForm({ content, onChange }: BenefitBlockFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-xs text-muted-foreground">Content {index + 1}</Label>
-                                <Textarea
+                                <RichTextEditor
                                     value={item.content}
-                                    onChange={(e) => handleItemChange(index, "content", e.target.value)}
+                                    onChange={(value) => handleItemChange(index, "content", value)}
                                     placeholder="Benefit description..."
-                                    rows={2}
                                 />
                             </div>
                         </div>

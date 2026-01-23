@@ -14,12 +14,14 @@ import {
     arrayMove,
     sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable"
-import { Plus } from "lucide-react"
+import { Plus, Download } from "lucide-react"
+import { saveAs } from "file-saver"
 
 import { Button } from "@/components/ui/button"
 import { Block, BlockType, LandingPageMetadata } from "./types"
 import { BlockList } from "./block-list"
 import { MetadataForm } from "./metadata-form"
+import { generateHtml } from "@/utils/html-generator"
 
 export function LandingPageEditor() {
     const [metadata, setMetadata] = useState<LandingPageMetadata>({
@@ -76,8 +78,27 @@ export function LandingPageEditor() {
         }
     }
 
+    const handleDownload = () => {
+        try {
+            const html = generateHtml(metadata, blocks)
+            const blob = new Blob(['\uFEFF', html], { type: "text/html;charset=utf-8" })
+            saveAs(blob, `landing-page-${new Date().getTime()}.html`)
+        } catch (error) {
+            console.error("Download failed:", error)
+            alert("파일 생성 중 오류가 발생했습니다.")
+        }
+    }
+
     return (
         <div className="mx-auto max-w-3xl space-y-8">
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold">Landing Page Builder</h1>
+                <Button onClick={handleDownload} className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Download HTML
+                </Button>
+            </div>
+
             <MetadataForm metadata={metadata} onChange={setMetadata} />
 
             <div className="space-y-4">
