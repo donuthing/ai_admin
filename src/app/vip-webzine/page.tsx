@@ -1,17 +1,16 @@
 import { AdminLayout } from "@/components/layout/admin-layout"
-import { KGonggamEditor } from "@/components/landing-page/editors/k-gonggam"
+import { VipWebzineEditor } from "@/components/landing-page/editors/vip-webzine"
 import { Separator } from "@/components/ui/separator"
 
-export default function BuilderPage() {
+export default function VipWebzinePage() {
     return (
         <AdminLayout>
             <div className="space-y-6">
                 <div>
-                    <h3 className="text-lg font-medium">K-공감</h3>
-
+                    <h3 className="text-lg font-medium">VIP Webzine</h3>
                 </div>
                 <Separator />
-                <KGonggamEditor />
+                <VipWebzineEditor />
             </div>
         </AdminLayout>
     )

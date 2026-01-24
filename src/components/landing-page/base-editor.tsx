@@ -25,14 +25,24 @@ import { generateHtml } from "@/utils/html-generator"
 
 import { Slider } from "@/components/ui/slider"
 
-export function LandingPageEditor() {
-    const [metadata, setMetadata] = useState<LandingPageMetadata>({
-        title1: "",
-        title2: "",
-        bgColor: "#123456",
-        imageUrl: "",
-        period: ""
-    })
+interface BaseEditorProps {
+    initialMetadata?: LandingPageMetadata
+    availableBlocks?: BlockType[]
+}
+
+const DEFAULT_METADATA: LandingPageMetadata = {
+    title1: "",
+    title2: "",
+    bgColor: "#123456",
+    imageUrl: "",
+    period: ""
+}
+
+export function BaseEditor({
+    initialMetadata = DEFAULT_METADATA,
+    availableBlocks = ['main', 'benefit', 'image']
+}: BaseEditorProps) {
+    const [metadata, setMetadata] = useState<LandingPageMetadata>(initialMetadata)
     const [blocks, setBlocks] = useState<Block[]>([])
     const [previewWidth, setPreviewWidth] = useState(480)
 
@@ -105,18 +115,24 @@ export function LandingPageEditor() {
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-semibold">내용</h2>
                             <div className="flex gap-2">
-                                <Button variant="outline" size="sm" className="bg-white" onClick={() => handleAddBlock('main')}>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    기본
-                                </Button>
-                                <Button variant="outline" size="sm" className="bg-white" onClick={() => handleAddBlock('benefit')}>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    혜택
-                                </Button>
-                                <Button variant="outline" size="sm" className="bg-white" onClick={() => handleAddBlock('image')}>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    이미지
-                                </Button>
+                                {availableBlocks.includes('main') && (
+                                    <Button variant="outline" size="sm" className="bg-white" onClick={() => handleAddBlock('main')}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        기본
+                                    </Button>
+                                )}
+                                {availableBlocks.includes('benefit') && (
+                                    <Button variant="outline" size="sm" className="bg-white" onClick={() => handleAddBlock('benefit')}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        혜택
+                                    </Button>
+                                )}
+                                {availableBlocks.includes('image') && (
+                                    <Button variant="outline" size="sm" className="bg-white" onClick={() => handleAddBlock('image')}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        이미지
+                                    </Button>
+                                )}
                             </div>
                         </div>
 
