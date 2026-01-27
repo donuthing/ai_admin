@@ -10,33 +10,24 @@ export async function generateBaseGeulImage(prompt: string) {
 
         const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
-        // Imagen model configuration
-        const response: any = await client.models.generateImages({
-            model: 'imagen-4.0-generate-001',
-            prompt: prompt,
-            config: {
-                numberOfImages: 1,
-                outputMimeType: "image/png"
-            }
+        const response: any = await client.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: prompt,
         })
 
-        if (response && response.generatedImages && response.generatedImages.length > 0) {
-            const image = response.generatedImages[0]
-            if (image.image && image.image.imageBytes) {
-                return {
-                    success: true,
-                    imageUrl: `data:image/png;base64,${image.image.imageBytes}`
+        if (response && response.candidates && response.candidates.length > 0) {
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    const base64Image = part.inlineData.data;
+                    return { success: true, imageUrl: `data:image/png;base64,${base64Image}` }
                 }
             }
         }
 
-        return { success: false, error: "이미지 생성에 실패했습니다. (응답 없음)" }
+        return { success: false, error: "이미지가 생성되지 않았습니다." }
 
     } catch (error: any) {
-        console.error("Gemini Image Generation Error:", error)
-        return {
-            success: false,
-            error: error.message || "이미지 생성 중 오류가 발생했습니다."
-        }
+        console.error("Image generation error:", error)
+        return { success: false, error: error.message || "이미지 생성 중 오류가 발생했습니다." }
     }
 }
