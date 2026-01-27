@@ -28,8 +28,9 @@ export function BlockList({ blocks, onUpdate, onRemove }: BlockListProps) {
                             No blocks added. Click a button below to start.
                         </p>
                     </div>
-                )}
-            </div>
-        </SortableContext>
+                )
+                }
+            </div >
+        </SortableContext >
     )
 }

@@ -44,7 +44,7 @@ export function BaseEditor({
 }: BaseEditorProps) {
     const [metadata, setMetadata] = useState<LandingPageMetadata>(initialMetadata)
     const [blocks, setBlocks] = useState<Block[]>([])
-    const [previewWidth, setPreviewWidth] = useState(480)
+    const [previewWidth, setPreviewWidth] = useState(390)
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -78,8 +78,12 @@ export function BaseEditor({
         setBlocks((prev) => prev.filter((block) => block.id !== id))
     }
 
+
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event
+
+
 
         if (over && active.id !== over.id) {
             setBlocks((items) => {
@@ -167,17 +171,19 @@ export function BaseEditor({
                                 />
                             </div>
                         </div>
-                        <div className="overflow-hidden rounded-xl border bg-muted/20 shadow-sm flex justify-center p-8 bg-gray-100 h-[calc(100vh-220px)] min-h-[500px]">
-                            <iframe
-                                srcDoc={generateHtml(metadata, blocks)}
-                                style={{ width: `${previewWidth}px` }}
-                                className="h-full bg-white shadow-2xl transition-all duration-300"
-                                title="Landing Page Preview"
-                            />
+                        <div className="overflow-hidden rounded-xl border bg-muted/20 shadow-sm flex justify-center p-8 bg-gray-100 h-[calc(100vh-250px)]">
+                            <div style={{ transform: 'scale(0.8)', transformOrigin: 'top center', height: '125%', display: 'flex', justifyContent: 'center' }}>
+                                <iframe
+                                    srcDoc={generateHtml(metadata, blocks, true)}
+                                    style={{ width: `${previewWidth}px` }}
+                                    className="h-full bg-white shadow-2xl transition-all duration-300"
+                                    title="Landing Page Preview"
+                                />
+                            </div>
                         </div>
                         <Button onClick={handleDownload} className="w-full gap-2" size="lg">
                             <Download className="h-4 w-4" />
-                            Download HTML
+                            HTML 다운로드
                         </Button>
                     </div>
                 </div>
