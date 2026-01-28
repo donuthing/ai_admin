@@ -42,7 +42,7 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
             body {
                 margin: 0;
                 padding: 0;
-                font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+                font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
                 background-color: #eee; /* Outer background */
             }
             .landing-page-container {
@@ -95,6 +95,7 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
             .header-period {
                 color: #FFF;
                 text-align: center;
+                font-family: Pretendard, sans-serif;
                 font-size: 15px;
                 font-style: normal;
                 font-weight: 400;
@@ -222,59 +223,87 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
             }
 
             /* Benefit List Block */
+            /* Benefit List Block */
+            .benefit-block {
+                display: flex;
+                width: 100%;
+                padding: 40px 20px 80px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+                box-sizing: border-box;
+            }
             .benefit-block h2 {
-                font-size: 20px;
-                font-weight: 800;
-                margin: 0 0 20px 0;
-                color: var(--text-main);
+                align-self: stretch;
+                color: #000;
+                font-family: Pretendard, sans-serif;
+                font-size: 24px;
+                font-style: normal;
+                font-weight: 700;
+                line-height: 32px;
+                margin: 0;
             }
             .benefit-list {
                 display: flex;
                 flex-direction: column;
-                gap: 20px;
+                gap: 32px;
             }
             .benefit-item {
                 display: flex;
-                gap: 12px;
+                flex-direction: column;
+                gap: 14px;
                 align-items: flex-start;
             }
+            .benefit-header {
+                display: flex;
+                gap: 8px;
+                align-items: flex-start;
+                width: 100%;
+            }
             .benefit-badge {
-                min-width: 24px;
+                width: 24px;
                 height: 24px;
                 background-color: #000;
                 color: white;
-                border-radius: 50%;
+                border-radius: 100px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 14px;
                 font-weight: bold;
                 flex-shrink: 0;
-                margin-top: 2px;
             }
-            .benefit-content h3 {
-                margin: 0 0 6px 0;
-                font-size: 16px;
-                font-weight: 800;
-                color: #000;
+            .benefit-header h3 {
+                margin: 0;
+                color: #22252A;
+                font-family: Pretendard, sans-serif;
+                font-size: 18px;
+                font-weight: 700;
+                line-height: 26px;
+                flex: 1; /* Allow title to take up remaining space */
             }
-            .benefit-content .text-content {
-                font-size: 14px;
-                line-height: 1.5;
-                color: #444;
+            .benefit-item .text-content {
+                align-self: stretch;
+                color: #22252A;
+                font-family: Pretendard, sans-serif;
+                font-size: 17px;
+                font-style: normal;
+                font-weight: 400;
+                line-height: 26px;
                 word-break: keep-all;
             }
-            .benefit-content .text-content p {
+            .benefit-item .text-content p {
                 margin: 0;
             }
 
 
             /* Rich Text Formatting */
-            .main-block .text-content strong, .benefit-content .text-content strong {
+            /* Rich Text Formatting */
+            .main-block .text-content strong, .benefit-item .text-content strong {
                 font-weight: 800;
                 color: var(--text-main);
             }
-            .main-block .text-content mark, .benefit-content .text-content mark {
+            .main-block .text-content mark, .benefit-item .text-content mark {
                 background-color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15);
                 color: inherit;
                 padding: 0 2px;
@@ -304,11 +333,11 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
                         <div class="benefit-list">
                             ${benefitContent.items.map((item: any, index: number) => `
                                 <div class="benefit-item">
-                                    <div class="benefit-badge">${index + 1}</div>
-                                    <div class="benefit-content">
+                                    <div class="benefit-header">
+                                        ${item.subtitle ? `<div class="benefit-badge">${index + 1}</div>` : ''}
                                         <h3>${item.subtitle}</h3>
-                                        <div class="text-content">${item.content}</div>
                                     </div>
+                                    <div class="text-content">${item.content}</div>
                                 </div>
                             `).join('')}
                         </div>
