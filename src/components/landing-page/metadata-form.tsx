@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { LandingPageMetadata } from "./types"
-import { Upload, Wand2, Loader2, X } from "lucide-react"
+import { Upload, Wand2, Loader2, X, Calendar as CalendarIcon } from "lucide-react"
 import { generateBaseGeulImage } from "@/app/actions/image"
 
 interface MetadataFormProps {
@@ -15,6 +15,8 @@ interface MetadataFormProps {
 
 export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const startPickerRef = useRef<HTMLInputElement>(null)
+    const endPickerRef = useRef<HTMLInputElement>(null)
     const [isGenerating, setIsGenerating] = useState(false)
     const [showPrompt, setShowPrompt] = useState(false)
     const [prompt, setPrompt] = useState("")
@@ -55,7 +57,7 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
         <div className="space-y-4">
             <h2 className="text-lg font-semibold">기본 정보
             </h2>
-            <Card className="border-border/50 shadow-sm transition-all hover:border-primary/50 hover:shadow-md">
+            <Card className="border-border/50 shadow transition-all hover:border-primary/50 hover:shadow-md">
                 <CardContent className="space-y-4 p-6">
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
@@ -78,11 +80,121 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
 
                     <div className="space-y-2">
                         <Label>Period</Label>
-                        <Input
-                            value={metadata.period || ""}
-                            onChange={(e) => onChange({ ...metadata, period: e.target.value })}
-                            placeholder="e.g. 2024.03.01 - 2024.03.31"
-                        />
+                        <div className="flex gap-2 items-center">
+                            <div className="relative flex-1">
+                                <div
+                                    className="absolute left-0 top-0 h-full w-10 flex items-center justify-center z-10 cursor-pointer hover:bg-muted/50 rounded-l"
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        const input = startPickerRef.current
+                                        if (!input) return
+                                        if (document.activeElement === input) {
+                                            input.blur()
+                                        } else {
+                                            input.focus()
+                                            try {
+                                                input.showPicker()
+                                            } catch (err) {
+                                                console.error(err)
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                                <Input
+                                    value={(() => {
+                                        if (!metadata.period) return ""
+                                        const parts = metadata.period.split(" - ")
+                                        return parts[0] || ""
+                                    })()}
+                                    onChange={(e) => {
+                                        let raw = e.target.value.replace(/\D/g, "").slice(0, 8)
+                                        let formatted = raw
+                                        if (raw.length >= 5) {
+                                            formatted = `${raw.slice(0, 4)}.${raw.slice(4)}`
+                                        }
+                                        if (raw.length >= 7) {
+                                            formatted = `${formatted.slice(0, 7)}.${raw.slice(6)}`
+                                        }
+                                        const end = metadata.period?.split(" - ")[1] || ""
+                                        onChange({ ...metadata, period: `${formatted} - ${end}` })
+                                    }}
+                                    placeholder="YYYY.MM.DD"
+                                    maxLength={10}
+                                    className="pl-10"
+                                />
+                                <input
+                                    type="date"
+                                    ref={startPickerRef}
+                                    className="absolute opacity-0 pointer-events-none w-px h-px overflow-hidden bottom-0 left-0"
+                                    tabIndex={-1}
+                                    onChange={(e) => {
+                                        if (!e.target.value) return
+                                        const val = e.target.value.replace(/-/g, ".")
+                                        const end = metadata.period?.split(" - ")[1] || ""
+                                        onChange({ ...metadata, period: `${val} - ${end}` })
+                                    }}
+                                />
+                            </div>
+                            <span>~</span>
+                            <div className="relative flex-1">
+                                <div
+                                    className="absolute left-0 top-0 h-full w-10 flex items-center justify-center z-10 cursor-pointer hover:bg-muted/50 rounded-l"
+                                    onMouseDown={(e) => {
+                                        e.preventDefault()
+                                        const input = endPickerRef.current
+                                        if (!input) return
+                                        if (document.activeElement === input) {
+                                            input.blur()
+                                        } else {
+                                            input.focus()
+                                            try {
+                                                input.showPicker()
+                                            } catch (err) {
+                                                console.error(err)
+                                            }
+                                        }
+                                    }}
+                                >
+                                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                                <Input
+                                    value={(() => {
+                                        if (!metadata.period) return ""
+                                        const parts = metadata.period.split(" - ")
+                                        return parts[1] || ""
+                                    })()}
+                                    onChange={(e) => {
+                                        let raw = e.target.value.replace(/\D/g, "").slice(0, 8)
+                                        let formatted = raw
+                                        if (raw.length >= 5) {
+                                            formatted = `${raw.slice(0, 4)}.${raw.slice(4)}`
+                                        }
+                                        if (raw.length >= 7) {
+                                            formatted = `${formatted.slice(0, 7)}.${raw.slice(6)}`
+                                        }
+                                        const start = metadata.period?.split(" - ")[0] || ""
+                                        onChange({ ...metadata, period: `${start} - ${formatted}` })
+                                    }}
+                                    placeholder="YYYY.MM.DD"
+                                    maxLength={10}
+                                    className="pl-10"
+                                />
+                                <input
+                                    type="date"
+                                    ref={endPickerRef}
+                                    className="absolute opacity-0 pointer-events-none w-px h-px overflow-hidden bottom-0 left-0"
+                                    tabIndex={-1}
+                                    onChange={(e) => {
+                                        if (!e.target.value) return
+                                        const val = e.target.value.replace(/-/g, ".")
+                                        const start = metadata.period?.split(" - ")[0] || ""
+                                        onChange({ ...metadata, period: `${start} - ${val}` })
+                                    }}
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="space-y-2">

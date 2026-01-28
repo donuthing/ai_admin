@@ -1,6 +1,7 @@
 "use client"
 
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { AnimatePresence, motion } from "framer-motion"
 import { Block } from "./types"
 import { BlockItem } from "./block-item"
 
@@ -14,22 +15,25 @@ export function BlockList({ blocks, onUpdate, onRemove }: BlockListProps) {
     return (
         <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
             <div className="space-y-4">
-                {blocks.map((block) => (
-                    <BlockItem
-                        key={block.id}
-                        block={block}
-                        onUpdate={onUpdate}
-                        onRemove={onRemove}
-                    />
-                ))}
-                {blocks.length === 0 && (
-                    <div className="flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-muted">
-                        <p className="text-sm text-muted-foreground">
-                            No blocks added. Click a button below to start.
-                        </p>
-                    </div>
-                )
-                }
+                <AnimatePresence initial={false}>
+                    {blocks.map((block) => (
+                        <motion.div
+                            key={block.id}
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0, scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden p-1"
+                        >
+                            <BlockItem
+                                block={block}
+                                onUpdate={onUpdate}
+                                onRemove={onRemove}
+                            />
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+
             </div >
         </SortableContext >
     )

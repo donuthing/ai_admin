@@ -47,7 +47,7 @@ export function BlockItem({ block, onUpdate, onRemove }: BlockItemProps) {
             style={style}
             className={cn("group mb-4", isDragging && "opacity-50")}
         >
-            <Card className="border-border/50 shadow-sm transition-all hover:border-primary/50 hover:shadow-md">
+            <Card className="border-border/50 shadow transition-all hover:border-primary/50 hover:shadow-md">
                 <CardHeader className="flex flex-row items-center space-y-0 p-2">
                     <div
                         {...attributes}

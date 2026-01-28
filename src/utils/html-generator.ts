@@ -2,7 +2,8 @@
 import { Block, BlockType, LandingPageMetadata } from "@/components/landing-page/types";
 
 // Helper to convert hex to rgb
-const hexToRgb = (hex: string) => {
+// Helper to convert hex to rgb
+export const hexToRgb = (hex: string) => {
     // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
     const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
     hex = hex.replace(shorthandRegex, function (m, r, g, b) {
@@ -17,10 +18,10 @@ const hexToRgb = (hex: string) => {
     } : { r: 0, g: 0, b: 0 }; // Default to black if invalid
 }
 
-export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isPreview: boolean = false): string => {
+export const getPreviewStyles = (metadata: LandingPageMetadata) => {
     const bgColor = metadata.bgColor || '#29abe2';
     const rgb = hexToRgb(bgColor);
-    const gradientStyle = `linear-gradient(180deg, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.00) 0%, ${bgColor} 100%)`;
+
 
     // Basic CSS Reset & Variables
     const variables = `
@@ -33,7 +34,7 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
         }
     `;
 
-    const styles = `
+    return `
         <style>
             ${variables}
             * {
@@ -129,17 +130,7 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
                 margin-bottom: 98px; /* Push up from bottom if flex aligned? No, we are top aligning via padding-top: 30px */
             }
             
-            .header-gradient {
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                height: 234px;
-                z-index: 2; /* Between image and content */
-                background: ${gradientStyle};
-                backdrop-filter: blur(2px);
-                pointer-events: none;
-            }
+
 
             /* Content Sections */
             .content-wrapper {
@@ -311,6 +302,10 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
             }
         </style>
     `;
+}
+
+export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isPreview: boolean = false): string => {
+    const styles = getPreviewStyles(metadata);
 
     const renderBlock = (block: Block) => {
         switch (block.type) {
@@ -390,7 +385,6 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
             <div class="header-image-container">
                 ${metadata.imageUrl ? `<img src="${metadata.imageUrl}" class="header-image" alt="Header illustration" />` : ''}
             </div>
-            <div class="header-gradient"></div>
             <div class="header-content">
                 <h1 class="header-title">${metadata.title1}</h1>
                 <h1 class="header-title">${metadata.title2}</h1>
