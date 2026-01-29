@@ -44,15 +44,14 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 margin: 0;
                 padding: 0;
                 font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-                background-color: #eee; /* Outer background */
+                background-color: var(--bg-color);
             }
             .landing-page-container {
-                max-width: 600px; /* Allow wider screens, but cap it reasonable */
+                max-width: none;
                 width: 100%;
-                margin: 0 auto;
+                margin: 0;
                 background-color: var(--bg-color);
                 min-height: 100vh;
-                box-shadow: 0 0 20px rgba(0,0,0,0.1);
                 position: relative;
                 overflow-x: hidden;
             }
@@ -69,11 +68,13 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
             .header-content {
                 position: absolute;
                 top: 0;
-                left: 0;
+                left: 50%;
+                transform: translateX(-50%);
                 width: 100%;
+                max-width: 700px;
                 height: 100%;
                 z-index: 2; /* Content above image */
-                padding: 232px 30px 70px 30px; 
+                padding: 248px 30px 70px 30px; 
                 display: flex;
                 flex-direction: column;
                 align-items: center; /* Center horizontally */
@@ -85,13 +86,15 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 color: #FFF;
                 text-align: center;
                 font-family: Pretendard, sans-serif;
-                font-size: 32px;
+                font-size: 28px;
                 font-style: normal;
                 font-weight: 700;
-                line-height: 44px; /* 137.5% */
+                line-height: normal;
                 margin: 0;
                 white-space: pre-line;
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Optional: improves readability over image */
+            }
+            .header-title:nth-of-type(2) {
+                margin-bottom: 0px;
             }
             .header-period {
                 color: #FFF;
@@ -100,34 +103,31 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 font-size: 15px;
                 font-style: normal;
                 font-weight: 400;
-                line-height: normal;
-                margin-top: 13px;
+                line-height: 22px;
+                margin-top: 6px;
+                margin-bottom: 48px;
                 display: block;
             }
             .header-image-container {
                 width: 100%;
                 height: 100%;
-                padding-top: 30px;
-                /* Padding bottom 98px is implicitly handled by height/position if needed, or we just position top. 
-                   User asked for padding: top 30, left/right 64, bottom 98.
-                   Since we are centering a fixed size image, left/right padding of container is less relevant for sizing the image 
-                   but we can keep it for safety or use flex center. 
-                */
+                padding-top: 32px;
                 position: absolute; 
                 top: 0;
-                left: 0;
+                left: 50%;
+                transform: translateX(-50%);
                 z-index: 1;
                 display: flex;
                 justify-content: center;
                 box-sizing: border-box;
+                max-width: 700px;
             }
             .header-image {
-                width: 262px;
-                height: 262px;
+                width: 200px;
+                height: 200px;
                 object-fit: cover;
                 display: block;
-                /* If we want to strictly respect the 'padding' requirement visually: */
-                margin-bottom: 98px; /* Push up from bottom if flex aligned? No, we are top aligning via padding-top: 30px */
+                margin-bottom: 158px;
             }
             
 
@@ -137,20 +137,20 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 padding: 0;
                 display: flex;
                 flex-direction: column;
-                /* gap is handled by padding of blocks or we can keep it. 
-                   If blocks have 40px top/bottom padding, gap might be too much. 
-                   Let's result to simple flow. */
                 width: 100%;
+                max-width: 700px;
+                margin: 20px auto 40px auto;
             }
 
             /* Main Text Block */
             .main-block {
                 display: flex;
-                width: 100%;
-                padding: 40px 24px;
+                padding: 20px 24px;
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 15px;
+                align-self: stretch;
+                width: 100%;
                 box-sizing: border-box;
             }
 
@@ -171,9 +171,13 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 font-weight: 400;
                 line-height: 26px;
                 width: 100%;
+                display: block;
             }
             .main-block .text-content p {
                 margin: 0 0 15px 0;
+            }
+            .main-block .text-content p:last-child {
+                margin-bottom: 0;
             }
             .main-block .text-content ul, .main-block .text-content ol {
                 margin: 0 0 15px 0;
@@ -192,9 +196,13 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
             .image-block {
                 margin: 0;
                 display: flex;
+                padding: 20px;
                 flex-direction: column;
-                align-items: stretch;
-                padding: 0 24px;
+                align-items: flex-start;
+                gap: 8px;
+                align-self: stretch;
+                width: 100%;
+                box-sizing: border-box;
             }
             .image-block img {
                 width: 100%;
@@ -217,11 +225,12 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
             /* Benefit List Block */
             .benefit-block {
                 display: flex;
-                width: 100%;
-                padding: 40px 20px 80px 20px;
+                padding: 20px;
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 20px;
+                align-self: stretch;
+                width: 100%;
                 box-sizing: border-box;
             }
             .benefit-block h2 {
@@ -290,7 +299,8 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
 
             /* Rich Text Formatting */
             /* Rich Text Formatting */
-            .main-block .text-content strong, .benefit-item .text-content strong {
+            .main-block .text-content strong, .benefit-item .text-content strong,
+            .main-block .text-content b, .benefit-item .text-content b {
                 font-weight: 800;
                 color: var(--text-main);
             }

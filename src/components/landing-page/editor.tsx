@@ -29,11 +29,20 @@ export function LandingPageEditor() {
     const [metadata, setMetadata] = useState<LandingPageMetadata>({
         title1: "",
         title2: "",
-        bgColor: "#123456",
-        imageUrl: "",
+        bgColor: "#1FA4D7",
+        imageUrl: "https://cdn.paybooc.co.kr/cbf/bannerimage/PMB0103999/main_image_sample1.png",
         period: ""
     })
-    const [blocks, setBlocks] = useState<Block[]>([])
+    const [blocks, setBlocks] = useState<Block[]>([
+        {
+            id: 'default-block-1',
+            type: 'main',
+            content: {
+                title: "제목을 입력해주세요",
+                content: "본문은 이렇게 보여요. 텍스트를 드래그하면 <b>볼드</b>와 <mark>하이라이트</mark> 설정을 할 수 있어요  <mark><b>동시에 적용</b></mark>도 가능해요"
+            }
+        }
+    ])
     const [previewWidth, setPreviewWidth] = useState(480)
 
     const sensors = useSensors(
@@ -144,7 +153,7 @@ export function LandingPageEditor() {
                                 <Slider
                                     value={[previewWidth]}
                                     min={320}
-                                    max={600}
+                                    max={1920}
                                     step={10}
                                     onValueChange={([val]) => setPreviewWidth(val)}
                                     className="w-full"

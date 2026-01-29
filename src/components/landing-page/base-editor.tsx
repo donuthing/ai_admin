@@ -29,7 +29,9 @@ import { Slider } from "@/components/ui/slider"
 
 interface BaseEditorProps {
     initialMetadata?: LandingPageMetadata
+    initialBlocks?: Block[]
     availableBlocks?: BlockType[]
+    defaultBlockContent?: Partial<Record<BlockType, any>>
 }
 
 const DEFAULT_METADATA: LandingPageMetadata = {
@@ -49,7 +51,9 @@ const formatDate = (date: Date) => {
 
 export function BaseEditor({
     initialMetadata = DEFAULT_METADATA,
-    availableBlocks = ['main', 'benefit', 'image']
+    initialBlocks = [],
+    availableBlocks = ['main', 'benefit', 'image'],
+    defaultBlockContent = {}
 }: BaseEditorProps) {
     const [metadata, setMetadata] = useState<LandingPageMetadata>(() => {
         if (initialMetadata === DEFAULT_METADATA) {
@@ -63,7 +67,7 @@ export function BaseEditor({
         }
         return initialMetadata
     })
-    const [blocks, setBlocks] = useState<Block[]>([])
+    const [blocks, setBlocks] = useState<Block[]>(initialBlocks)
     const [previewWidth, setPreviewWidth] = useState(390)
     const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
     const [iframeBody, setIframeBody] = useState<HTMLElement | null>(null)
@@ -125,11 +129,11 @@ export function BaseEditor({
         const newBlock: Block = {
             id: crypto.randomUUID(),
             type,
-            content: type === 'main'
+            content: defaultBlockContent[type] || (type === 'main'
                 ? { title: "", content: "" }
                 : type === 'benefit'
                     ? { title: "", items: [{ subtitle: "", content: "" }] }
-                    : { imageUrl: "", caption: "" },
+                    : { imageUrl: "", caption: "" }),
         }
         setBlocks((prev) => [...prev, newBlock])
     }
