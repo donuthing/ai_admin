@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   //   output: "export",
@@ -11,6 +12,10 @@ const nextConfig: NextConfig = {
     buildActivity: false,
     turbopack: false,
   } as any,
+  // @ts-ignore
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
 };
 
 export default nextConfig;

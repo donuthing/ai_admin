@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { LandingPageMetadata } from "./types"
-import { Upload, Wand2, Loader2, X, Calendar as CalendarIcon } from "lucide-react"
+import { Upload, Wand2, Loader2, X, Calendar as CalendarIcon, FileType } from "lucide-react"
 import { generateBaseGeulImage } from "@/app/actions/image"
+import { Toggle } from "@/components/ui/toggle"
 
 interface MetadataFormProps {
     metadata: LandingPageMetadata;
@@ -20,6 +21,7 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
     const [isGenerating, setIsGenerating] = useState(false)
     const [showPrompt, setShowPrompt] = useState(false)
     const [prompt, setPrompt] = useState("")
+    const [isIconMode, setIsIconMode] = useState(false)
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -33,11 +35,12 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
     }
 
     const handleGenerateImage = async () => {
+        console.log("Generating image, Icon Mode:", isIconMode);
         if (!prompt.trim()) return
 
         setIsGenerating(true)
         try {
-            const result = await generateBaseGeulImage(prompt)
+            const result = await generateBaseGeulImage(prompt, isIconMode)
             if (result.success && result.imageUrl) {
                 onChange({ ...metadata, imageUrl: result.imageUrl })
                 setShowPrompt(false)
@@ -218,12 +221,30 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                     <div className="space-y-4">
                         <Label>Main Image URL</Label>
                         <div className="flex gap-2">
-                            <Input
-                                value={metadata.imageUrl || ""}
-                                onChange={(e) => onChange({ ...metadata, imageUrl: e.target.value })}
-                                placeholder="https://example.com/hero-image.jpg"
-                                className="flex-1"
-                            />
+                            {metadata.imageUrl?.startsWith("data:") ? (
+                                <div className="relative flex-1">
+                                    <Input
+                                        value="이미지 생성 완료"
+                                        readOnly
+                                        className="flex-1 pr-10 text-muted-foreground"
+                                    />
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground"
+                                        onClick={() => onChange({ ...metadata, imageUrl: "" })}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Input
+                                    value={metadata.imageUrl || ""}
+                                    onChange={(e) => onChange({ ...metadata, imageUrl: e.target.value })}
+                                    placeholder="https://example.com/hero-image.jpg"
+                                    className="flex-1"
+                                />
+                            )}
                             <div className="flex gap-2">
                                 <input
                                     type="file"
@@ -256,20 +277,37 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                             <Card className="bg-muted/50 border-dashed">
                                 <CardContent className="p-4 space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <Label className="text-sm font-medium">Gemini 이미지 생성 프롬프트</Label>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-6 w-6 p-0"
-                                            onClick={() => setShowPrompt(false)}
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </Button>
+                                        <Label className="text-sm font-medium">Gemini 이미지 생성 {isIconMode ? "(아이콘 모드)" : ""}</Label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground mr-2">
+                                                <Label htmlFor="icon-mode" className="cursor-pointer">아이콘 모드</Label>
+                                                <Toggle
+                                                    id="icon-mode"
+                                                    pressed={isIconMode}
+                                                    onPressedChange={setIsIconMode}
+                                                    variant="outline"
+                                                    size="sm"
+                                                    aria-label="Toggle icon mode"
+                                                >
+                                                    <FileType className="h-4 w-4" />
+                                                </Toggle>
+                                            </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-6 w-6 p-0"
+                                                onClick={() => setShowPrompt(false)}
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                     </div>
                                     <Textarea
                                         value={prompt}
                                         onChange={(e) => setPrompt(e.target.value)}
-                                        placeholder="생성하고 싶은 이미지에 대해 자세히 설명해주세요 (예: 미래지향적인 도시 풍경, 파란색 톤의 비즈니스 미팅 등)"
+                                        placeholder={isIconMode
+                                            ? "생성할 아이콘의 키워드를 입력하세요 (예: Robot, Camera, House)"
+                                            : "생성하고 싶은 이미지에 대해 자세히 설명해주세요 (예: 미래지향적인 도시 풍경, 파란색 톤의 비즈니스 미팅 등)"}
                                         rows={3}
                                     />
                                     <div className="flex justify-end">
