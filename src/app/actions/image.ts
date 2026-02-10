@@ -1,6 +1,9 @@
 "use server"
 
 import { GoogleGenAI } from "@google/genai";
+import fs from "fs/promises";
+import path from "path";
+import crypto from "crypto";
 
 const ICON_PROMPT_TEMPLATE = `Create a simplified 3D {keyword} icon.
 
@@ -78,13 +81,6 @@ const REFERENCE_IMAGES = [
 
 export async function generateBaseGeulImage(prompt: string, useIconGuide: boolean = false) {
     try {
-        const project = process.env.GCP_PROJECT_ID;
-
-        // const client = new GoogleGenAI({
-        //     vertexai: true, // 300$ 크레딧 사용 필수 옵션
-        //     project: project,
-        //     location: 'us-central1' // 이미지 생성에 가장 안정적인 리전
-        // });
         const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
         let finalPrompt = prompt;
@@ -111,7 +107,29 @@ export async function generateBaseGeulImage(prompt: string, useIconGuide: boolea
             const image = response.generatedImages[0].image;
             if (image) {
                 const imageBytes = (image as any).bytes;
-                return { success: true, imageUrl: `data:image/png;base64,${imageBytes}` };
+
+                // MERGED LOGIC: Save the image to the public directory instead of returning just base64
+                // buffer from base64
+                const buffer = Buffer.from(imageBytes, 'base64');
+
+                // Generate unique filename
+                const filename = `gen-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.png`;
+                const publicDir = path.join(process.cwd(), 'public', 'generated-images');
+                const filePath = path.join(publicDir, filename);
+
+                // Ensure directory exists
+                try {
+                    await fs.access(publicDir);
+                } catch {
+                    await fs.mkdir(publicDir, { recursive: true });
+                }
+
+                // Write file
+                await fs.writeFile(filePath, buffer);
+
+                // Return URL path
+                const imageUrl = `/generated-images/${filename}`;
+                return { success: true, imageUrl: imageUrl };
             }
         }
 
