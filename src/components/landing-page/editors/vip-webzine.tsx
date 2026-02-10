@@ -8,7 +8,7 @@ const INITIAL_METADATA: LandingPageMetadata = {
     title2: "",
     bgColor: "#333333", // Different default background
     imageUrl: "",
-    period: ""
+
 }
 
 const AVAILABLE_BLOCKS: BlockType[] = ['main', 'benefit', 'image'] // VIP might have different blocks later

@@ -16,12 +16,10 @@ interface MetadataFormProps {
 
 export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
     const fileInputRef = useRef<HTMLInputElement>(null)
-    const startPickerRef = useRef<HTMLInputElement>(null)
-    const endPickerRef = useRef<HTMLInputElement>(null)
+
     const [isGenerating, setIsGenerating] = useState(false)
     const [showPrompt, setShowPrompt] = useState(false)
-    const [prompt, setPrompt] = useState("")
-    const [isIconMode, setIsIconMode] = useState(false)
+    const [keywords, setKeywords] = useState(["", "", ""])
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -35,16 +33,17 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
     }
 
     const handleGenerateImage = async () => {
-        console.log("Generating image, Icon Mode:", isIconMode);
-        if (!prompt.trim()) return
+        const prompt = keywords.filter(k => k.trim()).join(", ")
+        console.log("Generating image with keywords:", prompt);
+        if (!prompt) return
 
         setIsGenerating(true)
         try {
-            const result = await generateBaseGeulImage(prompt, isIconMode)
+            const result = await generateBaseGeulImage(prompt, true)
             if (result.success && result.imageUrl) {
                 onChange({ ...metadata, imageUrl: result.imageUrl })
                 setShowPrompt(false)
-                setPrompt("")
+                setKeywords(["", "", ""])
             } else {
                 alert(result.error || "이미지 생성에 실패했습니다.")
             }
@@ -81,124 +80,7 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label>Period</Label>
-                        <div className="flex gap-2 items-center">
-                            <div className="relative flex-1">
-                                <div
-                                    className="absolute left-0 top-0 h-full w-10 flex items-center justify-center z-10 cursor-pointer hover:bg-muted/50 rounded-l"
-                                    onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        const input = startPickerRef.current
-                                        if (!input) return
-                                        if (document.activeElement === input) {
-                                            input.blur()
-                                        } else {
-                                            input.focus()
-                                            try {
-                                                input.showPicker()
-                                            } catch (err) {
-                                                console.error(err)
-                                            }
-                                        }
-                                    }}
-                                >
-                                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                                </div>
-                                <Input
-                                    value={(() => {
-                                        if (!metadata.period) return ""
-                                        const parts = metadata.period.split(" - ")
-                                        return parts[0] || ""
-                                    })()}
-                                    onChange={(e) => {
-                                        let raw = e.target.value.replace(/\D/g, "").slice(0, 8)
-                                        let formatted = raw
-                                        if (raw.length >= 5) {
-                                            formatted = `${raw.slice(0, 4)}.${raw.slice(4)}`
-                                        }
-                                        if (raw.length >= 7) {
-                                            formatted = `${formatted.slice(0, 7)}.${raw.slice(6)}`
-                                        }
-                                        const end = metadata.period?.split(" - ")[1] || ""
-                                        onChange({ ...metadata, period: `${formatted} - ${end}` })
-                                    }}
-                                    placeholder="YYYY.MM.DD"
-                                    maxLength={10}
-                                    className="pl-10"
-                                />
-                                <input
-                                    type="date"
-                                    ref={startPickerRef}
-                                    className="absolute opacity-0 pointer-events-none w-px h-px overflow-hidden bottom-0 left-0"
-                                    tabIndex={-1}
-                                    onChange={(e) => {
-                                        if (!e.target.value) return
-                                        const val = e.target.value.replace(/-/g, ".")
-                                        const end = metadata.period?.split(" - ")[1] || ""
-                                        onChange({ ...metadata, period: `${val} - ${end}` })
-                                    }}
-                                />
-                            </div>
-                            <span>~</span>
-                            <div className="relative flex-1">
-                                <div
-                                    className="absolute left-0 top-0 h-full w-10 flex items-center justify-center z-10 cursor-pointer hover:bg-muted/50 rounded-l"
-                                    onMouseDown={(e) => {
-                                        e.preventDefault()
-                                        const input = endPickerRef.current
-                                        if (!input) return
-                                        if (document.activeElement === input) {
-                                            input.blur()
-                                        } else {
-                                            input.focus()
-                                            try {
-                                                input.showPicker()
-                                            } catch (err) {
-                                                console.error(err)
-                                            }
-                                        }
-                                    }}
-                                >
-                                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                                </div>
-                                <Input
-                                    value={(() => {
-                                        if (!metadata.period) return ""
-                                        const parts = metadata.period.split(" - ")
-                                        return parts[1] || ""
-                                    })()}
-                                    onChange={(e) => {
-                                        let raw = e.target.value.replace(/\D/g, "").slice(0, 8)
-                                        let formatted = raw
-                                        if (raw.length >= 5) {
-                                            formatted = `${raw.slice(0, 4)}.${raw.slice(4)}`
-                                        }
-                                        if (raw.length >= 7) {
-                                            formatted = `${formatted.slice(0, 7)}.${raw.slice(6)}`
-                                        }
-                                        const start = metadata.period?.split(" - ")[0] || ""
-                                        onChange({ ...metadata, period: `${start} - ${formatted}` })
-                                    }}
-                                    placeholder="YYYY.MM.DD"
-                                    maxLength={10}
-                                    className="pl-10"
-                                />
-                                <input
-                                    type="date"
-                                    ref={endPickerRef}
-                                    className="absolute opacity-0 pointer-events-none w-px h-px overflow-hidden bottom-0 left-0"
-                                    tabIndex={-1}
-                                    onChange={(e) => {
-                                        if (!e.target.value) return
-                                        const val = e.target.value.replace(/-/g, ".")
-                                        const start = metadata.period?.split(" - ")[0] || ""
-                                        onChange({ ...metadata, period: `${start} - ${val}` })
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div className="space-y-2">
                         <Label>Background Color (Hex)</Label>
@@ -241,7 +123,7 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                                 <Input
                                     value={metadata.imageUrl || ""}
                                     onChange={(e) => onChange({ ...metadata, imageUrl: e.target.value })}
-                                    placeholder="https://example.com/hero-image.jpg"
+                                    placeholder="https://example.com/hero-jpg"
                                     className="flex-1"
                                 />
                             )}
@@ -277,43 +159,40 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                             <Card className="bg-muted/50 border-dashed">
                                 <CardContent className="p-4 space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <Label className="text-sm font-medium">Gemini 이미지 생성 {isIconMode ? "(아이콘 모드)" : ""}</Label>
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex items-center gap-2 text-xs text-muted-foreground mr-2">
-                                                <Label htmlFor="icon-mode" className="cursor-pointer">아이콘 모드</Label>
-                                                <Toggle
-                                                    id="icon-mode"
-                                                    pressed={isIconMode}
-                                                    onPressedChange={setIsIconMode}
-                                                    variant="outline"
-                                                    size="sm"
-                                                    aria-label="Toggle icon mode"
-                                                >
-                                                    <FileType className="h-4 w-4" />
-                                                </Toggle>
-                                            </div>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-6 w-6 p-0"
-                                                onClick={() => setShowPrompt(false)}
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </Button>
-                                        </div>
+                                        <Label className="text-sm font-medium">Gemini 이미지 생성 키워드 입력 (1~2개 권장)</Label>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0"
+                                            onClick={() => setShowPrompt(false)}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
                                     </div>
-                                    <Textarea
-                                        value={prompt}
-                                        onChange={(e) => setPrompt(e.target.value)}
-                                        placeholder={isIconMode
-                                            ? "생성할 아이콘의 키워드를 입력하세요 (예: Robot, Camera, House)"
-                                            : "생성하고 싶은 이미지에 대해 자세히 설명해주세요 (예: 미래지향적인 도시 풍경, 파란색 톤의 비즈니스 미팅 등)"}
-                                        rows={3}
-                                    />
+                                    <div className="flex gap-2">
+                                        {[0, 1, 2].map((index) => (
+                                            <Input
+                                                key={index}
+                                                value={keywords[index]}
+                                                onChange={(e) => {
+                                                    const newKeywords = [...keywords]
+                                                    newKeywords[index] = e.target.value
+                                                    setKeywords(newKeywords)
+                                                }}
+                                                placeholder={`키워드 ${index + 1}`}
+                                                className="flex-1"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && keywords.some(k => k.trim())) {
+                                                        handleGenerateImage()
+                                                    }
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
                                     <div className="flex justify-end">
                                         <Button
                                             onClick={handleGenerateImage}
-                                            disabled={isGenerating || !prompt.trim()}
+                                            disabled={isGenerating || !keywords.some(k => k.trim())}
                                             size="sm"
                                         >
                                             {isGenerating ? (

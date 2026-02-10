@@ -25,7 +25,7 @@ export interface LandingPageMetadata {
     title2: string;
     bgColor: string;
     imageUrl?: string;
-    period?: string;
+
 }
 
 export interface Block {

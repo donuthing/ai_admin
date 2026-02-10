@@ -39,15 +39,10 @@ const DEFAULT_METADATA: LandingPageMetadata = {
     title2: "이렇게 보여요",
     bgColor: "#A093FF",
     imageUrl: "",
-    period: ""
+
 }
 
-const formatDate = (date: Date) => {
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    return `${yyyy}.${mm}.${dd}`;
-}
+
 
 export function BaseEditor({
     initialMetadata = DEFAULT_METADATA,
@@ -55,18 +50,7 @@ export function BaseEditor({
     availableBlocks = ['main', 'benefit', 'image'],
     defaultBlockContent = {}
 }: BaseEditorProps) {
-    const [metadata, setMetadata] = useState<LandingPageMetadata>(() => {
-        if (initialMetadata === DEFAULT_METADATA) {
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            return {
-                ...DEFAULT_METADATA,
-                period: `${formatDate(today)} - ${formatDate(tomorrow)}`
-            }
-        }
-        return initialMetadata
-    })
+    const [metadata, setMetadata] = useState<LandingPageMetadata>(initialMetadata)
     const [blocks, setBlocks] = useState<Block[]>(initialBlocks)
     const [previewWidth, setPreviewWidth] = useState(390)
     const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)

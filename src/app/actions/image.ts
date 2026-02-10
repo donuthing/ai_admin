@@ -47,8 +47,6 @@ no color variation, no lighting falloff.
 Background color is automatically generated
 based on the dominant color of the object.
 Use a similar hue but darker or more muted.
-Ensure sufficient contrast so that white text (FFFFFF_1)
-is clearly readable on the background.
 Do not use pure white or pure black.
 Negative:
 no photorealism,
@@ -70,8 +68,6 @@ no floating isolated objects,
 no text, no characters`;
 
 const REFERENCE_IMAGES = [
-    { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-calculator.png" },
-    { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-calendar2.png" },
     { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-cellphone.png" },
     { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-clock.png" },
     { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-coin3.png" },
@@ -84,11 +80,12 @@ export async function generateBaseGeulImage(prompt: string, useIconGuide: boolea
     try {
         const project = process.env.GCP_PROJECT_ID;
 
-        const client = new GoogleGenAI({
-            vertexai: true, // 300$ 크레딧 사용 필수 옵션
-            project: project,
-            location: 'us-central1' // 이미지 생성에 가장 안정적인 리전
-        });
+        // const client = new GoogleGenAI({
+        //     vertexai: true, // 300$ 크레딧 사용 필수 옵션
+        //     project: project,
+        //     location: 'us-central1' // 이미지 생성에 가장 안정적인 리전
+        // });
+        const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
         let finalPrompt = prompt;
         // @ts-ignore
@@ -105,7 +102,7 @@ export async function generateBaseGeulImage(prompt: string, useIconGuide: boolea
 
         // ✅ 모델 이름을 -001 버전으로 변경하여 호출합니다.
         const response = await client.models.generateImages({
-            model: 'imagen-3.0-generate-001',
+            model: 'imagen-4.0-generate-001',
             prompt: finalPrompt,
             config: generationConfig
         });
@@ -113,7 +110,7 @@ export async function generateBaseGeulImage(prompt: string, useIconGuide: boolea
         if (response?.generatedImages && response.generatedImages.length > 0) {
             const image = response.generatedImages[0].image;
             if (image) {
-                const imageBytes = image.imageBytes || (image as any).bytes;
+                const imageBytes = (image as any).bytes;
                 return { success: true, imageUrl: `data:image/png;base64,${imageBytes}` };
             }
         }

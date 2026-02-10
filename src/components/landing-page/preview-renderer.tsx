@@ -18,7 +18,7 @@ export function PreviewRenderer({ metadata, blocks }: PreviewRendererProps) {
                 <div className="header-content">
                     <h1 className="header-title">{metadata.title1}</h1>
                     <h1 className="header-title">{metadata.title2}</h1>
-                    <span className="header-period">{metadata.period}</span>
+
                 </div>
             </header>
 

@@ -31,7 +31,7 @@ export function LandingPageEditor() {
         title2: "",
         bgColor: "#1FA4D7",
         imageUrl: "https://cdn.paybooc.co.kr/cbf/bannerimage/PMB0103999/main_image_sample1.png",
-        period: ""
+
     })
     const [blocks, setBlocks] = useState<Block[]>([
         {

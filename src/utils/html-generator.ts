@@ -96,18 +96,7 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
             .header-title:nth-of-type(2) {
                 margin-bottom: 0px;
             }
-            .header-period {
-                color: #FFF;
-                text-align: center;
-                font-family: Pretendard, sans-serif;
-                font-size: 15px;
-                font-style: normal;
-                font-weight: 400;
-                line-height: 22px;
-                margin-top: 6px;
-                margin-bottom: 48px;
-                display: block;
-            }
+
             .header-image-container {
                 width: 100%;
                 height: 100%;
@@ -398,7 +387,7 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
             <div class="header-content">
                 <h1 class="header-title">${metadata.title1}</h1>
                 <h1 class="header-title">${metadata.title2}</h1>
-                <span class="header-period">${metadata.period}</span>
+
             </div>
         </header>
 

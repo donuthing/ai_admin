@@ -8,7 +8,7 @@ async function testImageGen() {
 
     try {
         const response = await client.models.generateImages({
-            model: model,
+            model: 'imagen-3.0-generate-001',
             prompt: "A cute robot eating a donut",
             config: { numberOfImages: 1 }
         });

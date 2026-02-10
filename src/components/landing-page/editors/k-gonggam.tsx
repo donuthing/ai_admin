@@ -5,24 +5,17 @@ import { BlockType, LandingPageMetadata } from "@/components/landing-page/types"
 
 const AVAILABLE_BLOCKS: BlockType[] = ['main', 'benefit', 'image']
 
-const formatDate = (date: Date) => {
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    return `${yyyy}.${mm}.${dd}`;
-}
+
 
 export function KGonggamEditor() {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+
 
     const initialMetadata: LandingPageMetadata = {
         title1: "제목을 입력하면",
         title2: "이렇게 보여요",
         bgColor: "#1FA4D7",
         imageUrl: "https://cdn.paybooc.co.kr/cbf/bannerimage/PMB0103999/main_image_sample1.png",
-        period: `${formatDate(today)} - ${formatDate(tomorrow)}`
+
     }
 
     const defaultBlockContent = {
