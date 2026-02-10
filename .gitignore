@@ -151,3 +151,4 @@ vite.config.ts.timestamp-*
 
 # Google Cloud Credentials
 gen-lang-client-*.json
+google-cloud-credentials.json

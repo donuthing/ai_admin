@@ -83,18 +83,48 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
 
 
                     <div className="space-y-2">
-                        <Label>Background Color (Hex)</Label>
-                        <div className="flex gap-2">
+                        <Label>Key Color</Label>
+                        <div className="flex gap-2 items-center">
                             <Input
                                 value={metadata.bgColor}
                                 onChange={(e) => onChange({ ...metadata, bgColor: e.target.value })}
                                 placeholder="#ffffff"
-                                className="font-mono"
+                                className="font-mono flex-1"
                             />
-                            <div
-                                className="h-10 w-10 rounded border shadow-sm"
+                            <label
+                                className="h-10 w-10 rounded border shadow-sm cursor-pointer block shrink-0 overflow-hidden"
                                 style={{ backgroundColor: metadata.bgColor }}
-                            />
+                                title="컬러 픽커"
+                            >
+                                <input
+                                    type="color"
+                                    value={metadata.bgColor || '#29abe2'}
+                                    onChange={(e) => onChange({ ...metadata, bgColor: e.target.value })}
+                                    className="opacity-0 w-full h-full cursor-pointer"
+                                />
+                            </label>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                title="스포이드"
+                                className="shrink-0"
+                                onClick={async () => {
+                                    try {
+                                        // @ts-ignore - EyeDropper API
+                                        const eyeDropper = new EyeDropper();
+                                        const result = await eyeDropper.open();
+                                        onChange({ ...metadata, bgColor: result.sRGBHex });
+                                    } catch (e) {
+                                        console.log("EyeDropper cancelled or not supported");
+                                    }
+                                }}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m2 22 1-1h3l9-9" />
+                                    <path d="M3 21v-3l9-9" />
+                                    <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3L15 6" />
+                                </svg>
+                            </Button>
                         </div>
                     </div>
 
@@ -182,6 +212,7 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                                                 placeholder={`키워드 ${index + 1}`}
                                                 className="flex-1"
                                                 onKeyDown={(e) => {
+                                                    if (e.nativeEvent.isComposing) return;
                                                     if (e.key === 'Enter' && keywords.some(k => k.trim())) {
                                                         handleGenerateImage()
                                                     }

@@ -4,6 +4,8 @@ import { GoogleGenAI } from "@google/genai";
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import sharp from "sharp";
+
 
 const ICON_PROMPT_TEMPLATE = `Create a simplified 3D {keyword} icon.
 
@@ -50,6 +52,8 @@ no color variation, no lighting falloff.
 Background color is automatically generated
 based on the dominant color of the object.
 Use a similar hue but darker or more muted.
+Ensure sufficient contrast so that white text (FFFFFF_1)
+is clearly readable on the background.
 Do not use pure white or pure black.
 Negative:
 no photorealism,
@@ -87,7 +91,7 @@ export async function generateBaseGeulImage(prompt: string, useIconGuide: boolea
         // @ts-ignore
         let generationConfig: any = {
             numberOfImages: 1,
-            aspectRatio: "1:1",
+            aspectRatio: "4:3",
         };
 
         if (useIconGuide) {
@@ -106,29 +110,29 @@ export async function generateBaseGeulImage(prompt: string, useIconGuide: boolea
         if (response?.generatedImages && response.generatedImages.length > 0) {
             const image = response.generatedImages[0].image;
             if (image) {
-                const imageBytes = (image as any).bytes;
+                let imageBytes = (image as any).imageBytes;
 
-                // MERGED LOGIC: Save the image to the public directory instead of returning just base64
-                // buffer from base64
-                const buffer = Buffer.from(imageBytes, 'base64');
-
-                // Generate unique filename
-                const filename = `gen-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.png`;
-                const publicDir = path.join(process.cwd(), 'public', 'generated-images');
-                const filePath = path.join(publicDir, filename);
-
-                // Ensure directory exists
+                // 2. Zoom Image (Crop Center & Resize) - 1.2x zoom
                 try {
-                    await fs.access(publicDir);
-                } catch {
-                    await fs.mkdir(publicDir, { recursive: true });
+                    const buffer = Buffer.from(imageBytes, 'base64');
+                    const zoomedBuffer = await zoomImage(buffer, 1.2);
+                    imageBytes = zoomedBuffer.toString('base64');
+                } catch (zoomError) {
+                    console.error("Image zooming failed, using original image:", zoomError);
                 }
 
-                // Write file
-                await fs.writeFile(filePath, buffer);
+                // 3. Remove Background (if API key exists)
+                if (process.env.REMOVE_BG_API_KEY) {
+                    try {
+                        imageBytes = await removeBackground(imageBytes);
+                    } catch (bgError) {
+                        console.error("Background removal failed, using original image:", bgError);
+                        // Continue with original image
+                    }
+                }
 
                 // Return URL path
-                const imageUrl = `/generated-images/${filename}`;
+                const imageUrl = `data: image/png;base64,${imageBytes}`;
                 return { success: true, imageUrl: imageUrl };
             }
         }
@@ -140,4 +144,49 @@ export async function generateBaseGeulImage(prompt: string, useIconGuide: boolea
         // 에러 메시지에 404가 계속 뜬다면 'Vertex AI API' 활성화 여부를 다시 체크해야 합니다.
         return { success: false, error: error.message };
     }
+}
+
+async function removeBackground(base64Image: string): Promise<string> {
+    const response = await fetch("https://api.remove.bg/v1.0/removebg", {
+        method: "POST",
+        headers: {
+            "X-Api-Key": process.env.REMOVE_BG_API_KEY!,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        body: JSON.stringify({
+            image_file_b64: base64Image,
+            size: "auto",
+            format: "png"
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Remove.bg API Error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data.data.result_b64;
+}
+
+async function zoomImage(imageBuffer: Buffer, zoomFactor: number): Promise<Buffer> {
+    const image = sharp(imageBuffer);
+    const metadata = await image.metadata();
+
+    if (!metadata.width || !metadata.height) {
+        throw new Error("Invalid image metadata");
+    }
+
+    const width = metadata.width;
+    const height = metadata.height;
+    const cropWidth = Math.floor(width / zoomFactor);
+    const cropHeight = Math.floor(height / zoomFactor);
+    const left = Math.floor((width - cropWidth) / 2);
+    const top = Math.floor((height - cropHeight) / 2);
+
+    return await image
+        .extract({ left, top, width: cropWidth, height: cropHeight })
+        .resize(width, height)
+        .toBuffer();
 }

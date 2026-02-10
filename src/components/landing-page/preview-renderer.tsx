@@ -14,13 +14,11 @@ export function PreviewRenderer({ metadata, blocks }: PreviewRendererProps) {
                         <img src={metadata.imageUrl} className="header-image" alt="Header illustration" />
                     )}
                 </div>
-
-                <div className="header-content">
-                    <h1 className="header-title">{metadata.title1}</h1>
-                    <h1 className="header-title">{metadata.title2}</h1>
-
-                </div>
             </header>
+            <div className="title-section">
+                <h1 className="header-title-1">{metadata.title1}</h1>
+                <h1 className="header-title-2" style={{ color: metadata.bgColor || '#29abe2' }}>{metadata.title2}</h1>
+            </div>
 
             <div className="content-wrapper">
                 {blocks.map((block) => {

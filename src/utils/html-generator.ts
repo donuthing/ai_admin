@@ -60,30 +60,32 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
             .header-section {
                 background-color: var(--header-bg); /* Default fallback */
                 width: 100%;
-                height: 390px;
-                padding: 0; /* Remove padding to allow image-container to define layout */
+                max-width: 700px;
+                aspect-ratio: 3 / 2;
+                max-height: 467px;
+                margin: 0 auto;
+                padding: 0;
                 position: relative;
                 overflow: hidden;
+                display: block;
+                line-height: 0;
+                font-size: 0;
             }
-            .header-content {
-                position: absolute;
-                top: 0;
-                left: 50%;
-                transform: translateX(-50%);
+            .title-section {
+                display: flex;
                 width: 100%;
                 max-width: 700px;
-                height: 100%;
-                z-index: 2; /* Content above image */
-                padding: 248px 30px 70px 30px; 
-                display: flex;
+                margin: 0 auto;
+                padding: 24px 20px 20px 20px;
                 flex-direction: column;
-                align-items: center; /* Center horizontally */
-                pointer-events: none; 
+                align-items: center;
+                gap: 6px;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+                background: #FFF;
+                box-sizing: border-box;
             }
-
-            .header-title {
-                align-self: stretch;
-                color: #FFF;
+            .header-title-1 {
+                color: #070707;
                 text-align: center;
                 font-family: Pretendard, sans-serif;
                 font-size: 28px;
@@ -93,30 +95,31 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 margin: 0;
                 white-space: pre-line;
             }
-            .header-title:nth-of-type(2) {
-                margin-bottom: 0px;
+            .header-title-2 {
+                color: var(--header-bg);
+                text-align: center;
+                font-family: Pretendard, sans-serif;
+                font-size: 28px;
+                font-style: normal;
+                font-weight: 700;
+                line-height: normal;
+                margin: 0;
+                white-space: pre-line;
             }
 
             .header-image-container {
                 width: 100%;
                 height: 100%;
-                padding-top: 32px;
                 position: absolute; 
                 top: 0;
-                left: 50%;
-                transform: translateX(-50%);
+                left: 0;
                 z-index: 1;
-                display: flex;
-                justify-content: center;
-                box-sizing: border-box;
-                max-width: 700px;
             }
             .header-image {
-                width: 200px;
-                height: 200px;
+                width: 100%;
+                height: 100%;
                 object-fit: cover;
                 display: block;
-                margin-bottom: 158px;
             }
             
 
@@ -384,12 +387,11 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
             <div class="header-image-container">
                 ${metadata.imageUrl ? `<img src="${metadata.imageUrl}" class="header-image" alt="Header illustration" />` : ''}
             </div>
-            <div class="header-content">
-                <h1 class="header-title">${metadata.title1}</h1>
-                <h1 class="header-title">${metadata.title2}</h1>
-
-            </div>
         </header>
+        <div class="title-section">
+            <h1 class="header-title-1">${metadata.title1}</h1>
+            <h1 class="header-title-2" style="color: ${metadata.bgColor || '#29abe2'};">${metadata.title2}</h1>
+        </div>
 
         <div class="content-wrapper">
             ${blocks.map(renderBlock).join('\n')}
