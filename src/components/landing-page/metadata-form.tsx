@@ -19,7 +19,7 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
 
     const [isGenerating, setIsGenerating] = useState(false)
     const [showPrompt, setShowPrompt] = useState(false)
-    const [keywords, setKeywords] = useState(["", "", ""])
+    const [keyword, setKeyword] = useState("")
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -33,8 +33,8 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
     }
 
     const handleGenerateImage = async () => {
-        const prompt = keywords.filter(k => k.trim()).join(", ")
-        console.log("Generating image with keywords:", prompt);
+        const prompt = keyword.trim()
+        console.log("Generating image with keyword:", prompt);
         if (!prompt) return
 
         setIsGenerating(true)
@@ -43,7 +43,7 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
             if (result.success && result.imageUrl) {
                 onChange({ ...metadata, imageUrl: result.imageUrl })
                 setShowPrompt(false)
-                setKeywords(["", "", ""])
+                setKeyword("")
             } else {
                 alert(result.error || "이미지 생성에 실패했습니다.")
             }
@@ -200,30 +200,23 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                                         </Button>
                                     </div>
                                     <div className="flex gap-2">
-                                        {[0, 1, 2].map((index) => (
-                                            <Input
-                                                key={index}
-                                                value={keywords[index]}
-                                                onChange={(e) => {
-                                                    const newKeywords = [...keywords]
-                                                    newKeywords[index] = e.target.value
-                                                    setKeywords(newKeywords)
-                                                }}
-                                                placeholder={`키워드 ${index + 1}`}
-                                                className="flex-1"
-                                                onKeyDown={(e) => {
-                                                    if (e.nativeEvent.isComposing) return;
-                                                    if (e.key === 'Enter' && keywords.some(k => k.trim())) {
-                                                        handleGenerateImage()
-                                                    }
-                                                }}
-                                            />
-                                        ))}
+                                        <Input
+                                            value={keyword}
+                                            onChange={(e) => setKeyword(e.target.value)}
+                                            placeholder="이미지 생성을 위한 키워드를 입력하세요"
+                                            className="flex-1"
+                                            onKeyDown={(e) => {
+                                                if (e.nativeEvent.isComposing) return;
+                                                if (e.key === 'Enter' && keyword.trim()) {
+                                                    handleGenerateImage()
+                                                }
+                                            }}
+                                        />
                                     </div>
                                     <div className="flex justify-end">
                                         <Button
                                             onClick={handleGenerateImage}
-                                            disabled={isGenerating || !keywords.some(k => k.trim())}
+                                            disabled={isGenerating || !keyword.trim()}
                                             size="sm"
                                         >
                                             {isGenerating ? (
