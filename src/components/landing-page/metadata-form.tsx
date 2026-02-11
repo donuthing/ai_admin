@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState, useRef, startTransition } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -41,7 +41,9 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
         try {
             const result = await generateBaseGeulImage(prompt, true)
             if (result.success && result.imageUrl) {
-                onChange({ ...metadata, imageUrl: result.imageUrl })
+                startTransition(() => {
+                    onChange({ ...metadata, imageUrl: result.imageUrl })
+                })
                 setShowPrompt(false)
                 setKeyword("")
             } else {
