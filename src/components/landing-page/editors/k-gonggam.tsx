@@ -13,8 +13,8 @@ export function KGonggamEditor() {
     const initialMetadata: LandingPageMetadata = {
         title1: "제목을 입력하면",
         title2: "이렇게 보여요",
-        bgColor: "#1FA4D7",
-        imageUrl: "https://cdn.paybooc.co.kr/cbf/bannerimage/PMB0103999/main_image_sample1.png",
+        bgColor: "#A76B3B",
+        imageUrl: "https://cdn.paybooc.co.kr/cbf/bannerimage/PMB0103999/KV_sample2.png",
 
     }
 

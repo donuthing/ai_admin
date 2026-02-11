@@ -8,7 +8,7 @@ interface PreviewRendererProps {
 export function PreviewRenderer({ metadata, blocks }: PreviewRendererProps) {
     return (
         <div className="landing-page-container">
-            <header className="header-section" style={{ backgroundColor: metadata.bgColor || '#29abe2' }}>
+            <header className="header-section">
                 <div className="header-image-container">
                     {metadata.imageUrl && (
                         <img src={metadata.imageUrl} className="header-image" alt="Header illustration" />
@@ -17,7 +17,7 @@ export function PreviewRenderer({ metadata, blocks }: PreviewRendererProps) {
             </header>
             <div className="title-section">
                 <h1 className="header-title-1">{metadata.title1}</h1>
-                <h1 className="header-title-2" style={{ color: metadata.bgColor || '#29abe2' }}>{metadata.title2}</h1>
+                <h1 className="header-title-2" style={{ color: metadata.bgColor || '#A76B3B' }}>{metadata.title2}</h1>
             </div>
 
             <div className="content-wrapper">

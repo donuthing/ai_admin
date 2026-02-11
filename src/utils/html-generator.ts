@@ -19,7 +19,7 @@ export const hexToRgb = (hex: string) => {
 }
 
 export const getPreviewStyles = (metadata: LandingPageMetadata) => {
-    const bgColor = metadata.bgColor || '#29abe2';
+    const bgColor = metadata.bgColor || '#A76B3B';
     const rgb = hexToRgb(bgColor);
 
 
@@ -58,7 +58,7 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
             
             /* Header Section */
             .header-section {
-                background-color: var(--header-bg); /* Default fallback */
+                background-color: transparent; /* Changed from var(--header-bg) */
                 width: 100%;
                 max-width: 700px;
                 aspect-ratio: 3 / 2;
@@ -383,14 +383,14 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
 </head>
 <body>
     <div class="landing-page-container">
-        <header class="header-section" style="background-color: ${metadata.bgColor || '#29abe2'};">
+        <header class="header-section">
             <div class="header-image-container">
                 ${metadata.imageUrl ? `<img src="${metadata.imageUrl}" class="header-image" alt="Header illustration" />` : ''}
             </div>
         </header>
         <div class="title-section">
             <h1 class="header-title-1">${metadata.title1}</h1>
-            <h1 class="header-title-2" style="color: ${metadata.bgColor || '#29abe2'};">${metadata.title2}</h1>
+            <h1 class="header-title-2" style="color: ${metadata.bgColor || '#A76B3B'};">${metadata.title2}</h1>
         </div>
 
         <div class="content-wrapper">

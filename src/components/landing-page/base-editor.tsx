@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useDeferredValue, useMemo } from "react"
 import { createPortal } from "react-dom"
 import {
     DndContext,
@@ -37,7 +37,7 @@ interface BaseEditorProps {
 const DEFAULT_METADATA: LandingPageMetadata = {
     title1: "제목을 입력하면",
     title2: "이렇게 보여요",
-    bgColor: "#A093FF",
+    bgColor: "#A76B3B",
     imageUrl: "",
 
 }
@@ -58,6 +58,10 @@ export function BaseEditor({
     const bottomRef = useRef<HTMLDivElement>(null)
     const iframeRef = useRef<HTMLIFrameElement>(null)
     const prevBlocksLengthRef = useRef(blocks.length)
+
+    // Defer the value updates to prioritize input responsiveness (fixes IME issues)
+    const deferredMetadata = useDeferredValue(metadata)
+    const deferredBlocks = useDeferredValue(blocks)
 
     useEffect(() => {
         const iframe = iframeRef.current
@@ -257,8 +261,8 @@ export function BaseEditor({
                                 />
                                 {iframeBody && createPortal(
                                     <>
-                                        <div dangerouslySetInnerHTML={{ __html: getPreviewStyles(metadata) }} />
-                                        <PreviewRenderer metadata={metadata} blocks={blocks} />
+                                        <div dangerouslySetInnerHTML={{ __html: getPreviewStyles(deferredMetadata) }} />
+                                        <PreviewRenderer metadata={deferredMetadata} blocks={deferredBlocks} />
                                     </>,
                                     iframeBody
                                 )}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useDeferredValue, useMemo } from "react"
 import {
     DndContext,
     closestCenter,
@@ -29,8 +29,8 @@ export function LandingPageEditor() {
     const [metadata, setMetadata] = useState<LandingPageMetadata>({
         title1: "",
         title2: "",
-        bgColor: "#1FA4D7",
-        imageUrl: "https://cdn.paybooc.co.kr/cbf/bannerimage/PMB0103999/main_image_sample1.png",
+        bgColor: "#A76B3B",
+        imageUrl: "https://cdn.paybooc.co.kr/cbf/bannerimage/PMB0103999/KV_sample2.png",
 
     })
     const [blocks, setBlocks] = useState<Block[]>([
@@ -44,6 +44,12 @@ export function LandingPageEditor() {
         }
     ])
     const [previewWidth, setPreviewWidth] = useState(480)
+
+    // Defer the value updates to prioritize input responsiveness (fixes IME issues)
+    const deferredMetadata = useDeferredValue(metadata)
+    const deferredBlocks = useDeferredValue(blocks)
+
+    const html = useMemo(() => generateHtml(deferredMetadata, deferredBlocks), [deferredMetadata, deferredBlocks])
 
     const sensors = useSensors(
         useSensor(PointerSensor),
@@ -162,7 +168,7 @@ export function LandingPageEditor() {
                         </div>
                         <div className="overflow-hidden rounded-xl border bg-muted/20 shadow-sm flex justify-center p-8 bg-gray-100 h-[calc(100vh-220px)] min-h-[500px]">
                             <iframe
-                                srcDoc={generateHtml(metadata, blocks)}
+                                srcDoc={html}
                                 style={{ width: `${previewWidth}px` }}
                                 className="h-full bg-white shadow-2xl transition-all duration-300"
                                 title="Landing Page Preview"
