@@ -19,7 +19,7 @@ export const hexToRgb = (hex: string) => {
 }
 
 export const getPreviewStyles = (metadata: LandingPageMetadata) => {
-    const bgColor = metadata.bgColor || '#A76B3B';
+    const bgColor = '#D38674';
     const rgb = hexToRgb(bgColor);
 
 
@@ -60,9 +60,8 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
             .header-section {
                 background-color: transparent; /* Changed from var(--header-bg) */
                 width: 100%;
-                max-width: 700px;
-                aspect-ratio: 3 / 2;
-                max-height: 467px;
+                max-width: 600px;
+                aspect-ratio: 390 / 286;
                 margin: 0 auto;
                 padding: 0;
                 position: relative;
@@ -76,7 +75,7 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 width: 100%;
                 max-width: 700px;
                 margin: 0 auto;
-                padding: 24px 20px 20px 20px;
+                padding: 24px 20px 24px 20px;
                 flex-direction: column;
                 align-items: center;
                 gap: 6px;
@@ -88,7 +87,7 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 color: #070707;
                 text-align: center;
                 font-family: Pretendard, sans-serif;
-                font-size: 28px;
+                font-size: 26px;
                 font-style: normal;
                 font-weight: 700;
                 line-height: normal;
@@ -96,10 +95,10 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 white-space: pre-line;
             }
             .header-title-2 {
-                color: var(--header-bg);
+                color: #070707;
                 text-align: center;
                 font-family: Pretendard, sans-serif;
-                font-size: 28px;
+                font-size: 26px;
                 font-style: normal;
                 font-weight: 700;
                 line-height: normal;
@@ -149,10 +148,10 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
             .main-block h2 {
                 color: #191B1E;
                 font-family: Pretendard, sans-serif;
-                font-size: 24px;
+                font-size: 20px;
                 font-style: normal;
                 font-weight: 700;
-                line-height: 32px;
+                line-height: 28px;
                 margin: 0;
             }
             .main-block .text-content {
@@ -229,10 +228,10 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 align-self: stretch;
                 color: #000;
                 font-family: Pretendard, sans-serif;
-                font-size: 24px;
+                font-size: 20px;
                 font-style: normal;
                 font-weight: 700;
-                line-height: 32px;
+                line-height: 28px;
                 margin: 0;
             }
             .benefit-list {
@@ -301,6 +300,54 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 color: inherit;
                 padding: 0 2px;
                 border-radius: 2px;
+            }
+
+            /* Floating Button */
+            .floating-button-wrapper {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 0 20px 14px 20px;
+                box-sizing: border-box;
+                z-index: 100;
+                background: #FFF;
+            }
+            .has-floating-button {
+                padding-bottom: 80px;
+            }
+            .floating-button-wrapper::before {
+                content: '';
+                position: absolute;
+                top: -12px;
+                left: 0;
+                right: 0;
+                height: 12px;
+                background: linear-gradient(0deg, #FFF 0%, rgba(255, 255, 255, 0.00) 100%);
+                pointer-events: none;
+            }
+            .floating-button-wrapper a {
+                display: flex;
+                padding: 15px 10px;
+                justify-content: center;
+                align-items: center;
+                gap: 12px;
+                flex: 1 0 0;
+                width: 100%;
+                border-radius: 16px;
+                background: #1A3A6D;
+                color: #fff;
+                font-family: Pretendard, sans-serif;
+                font-size: 18px;
+                font-style: normal;
+                font-weight: 700;
+                line-height: 26px;
+                text-decoration: none;
+                box-sizing: border-box;
+                cursor: pointer;
             }
         </style>
     `;
@@ -382,7 +429,7 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
     ` : ''}
 </head>
 <body>
-    <div class="landing-page-container">
+    <div class="landing-page-container${metadata.useButton && metadata.buttonName ? ' has-floating-button' : ''}">
         <header class="header-section">
             <div class="header-image-container">
                 ${metadata.imageUrl ? `<img src="${metadata.imageUrl}" class="header-image" alt="Header illustration" />` : ''}
@@ -390,13 +437,22 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
         </header>
         <div class="title-section">
             <h1 class="header-title-1">${metadata.title1}</h1>
-            <h1 class="header-title-2" style="color: ${metadata.bgColor || '#A76B3B'};">${metadata.title2}</h1>
+            <h1 class="header-title-2">${metadata.title2}</h1>
         </div>
 
         <div class="content-wrapper">
             ${blocks.map(renderBlock).join('\n')}
         </div>
     </div>
+
+    ${metadata.useButton && metadata.buttonName ? `
+    <div class="floating-button-wrapper">
+        <a href="javascript:void(0)" onclick="${metadata.buttonLandingType === 'screenId'
+                ? `com.goNext('${metadata.buttonUrl || ''}')`
+                : `com.goNext('',{},'outlink','N','${metadata.buttonUrl || ''}','')`
+            }">${metadata.buttonName}</a>
+    </div>
+    ` : ''}
 </body>
 </html>
     `.trim();

@@ -4,7 +4,6 @@ import { GoogleGenAI } from "@google/genai";
 import fs from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import sharp from "sharp";
 
 
 const ICON_PROMPT_TEMPLATE = `Create a simplified 3D {keyword} icon.
@@ -52,7 +51,7 @@ no color variation, no lighting falloff.
 Background color is automatically generated
 based on the dominant color of the object.
 Use a similar hue but darker or more muted.
-Ensure sufficient contrast so that white text (FFFFFF_1)
+Ensure sufficient contrast so that white text
 is clearly readable on the background.
 Do not use pure white or pure black.
 Negative:
@@ -88,105 +87,42 @@ export async function generateBaseGeulImage(prompt: string, useIconGuide: boolea
         const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
         let finalPrompt = prompt;
-        // @ts-ignore
-        let generationConfig: any = {
-            numberOfImages: 1,
-            aspectRatio: "4:3",
-        };
 
         if (useIconGuide) {
             finalPrompt = ICON_PROMPT_TEMPLATE.replace(/{keyword}/g, prompt);
-            // ✅ 레퍼런스 이미지 설정 (모델이 이 이미지들의 재질/조명을 따라하게 됨)
-            generationConfig.image_input = REFERENCE_IMAGES;
         }
 
-        // ✅ 모델 이름을 -001 버전으로 변경하여 호출합니다.
-        const response = await client.models.generateImages({
-            model: 'imagen-4.0-generate-001',
-            prompt: finalPrompt,
-            config: generationConfig
+        // Gemini (Nano Banana) 모델로 이미지 생성
+        const response = await client.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: finalPrompt,
+            config: {
+                responseModalities: ['IMAGE'],
+            }
         });
 
-        if (response?.generatedImages && response.generatedImages.length > 0) {
-            const image = response.generatedImages[0].image;
-            if (image) {
-                let imageBytes = (image as any).imageBytes;
+        // 응답에서 이미지 데이터 추출
+        const candidates = (response as any).candidates;
+        if (candidates && candidates.length > 0) {
+            const parts = candidates[0].content?.parts;
+            if (parts) {
+                for (const part of parts) {
+                    if (part.inlineData) {
+                        let imageBytes = part.inlineData.data;
 
-                // 2. Zoom Image (Crop Center & Resize) - 1.2x zoom
-                try {
-                    const buffer = Buffer.from(imageBytes, 'base64');
-                    const zoomedBuffer = await zoomImage(buffer, 1.2);
-                    imageBytes = zoomedBuffer.toString('base64');
-                } catch (zoomError) {
-                    console.error("Image zooming failed, using original image:", zoomError);
-                }
-
-                // 3. Remove Background (if API key exists)
-                if (process.env.REMOVE_BG_API_KEY) {
-                    try {
-                        imageBytes = await removeBackground(imageBytes);
-                    } catch (bgError) {
-                        console.error("Background removal failed, using original image:", bgError);
-                        // Continue with original image
+                        const mimeType = part.inlineData.mimeType || 'image/png';
+                        const imageUrl = `data:${mimeType};base64,${imageBytes}`;
+                        return { success: true, imageUrl: imageUrl };
                     }
                 }
-
-                // Return URL path
-                const imageUrl = `data: image/png;base64,${imageBytes}`;
-                return { success: true, imageUrl: imageUrl };
             }
         }
 
         return { success: false, error: "이미지 데이터가 없습니다." };
 
     } catch (error: any) {
-        console.error("Imagen API Error:", error);
-        // 에러 메시지에 404가 계속 뜬다면 'Vertex AI API' 활성화 여부를 다시 체크해야 합니다.
+        console.error("Gemini Image API Error:", error);
         return { success: false, error: error.message };
     }
 }
 
-async function removeBackground(base64Image: string): Promise<string> {
-    const response = await fetch("https://api.remove.bg/v1.0/removebg", {
-        method: "POST",
-        headers: {
-            "X-Api-Key": process.env.REMOVE_BG_API_KEY!,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
-        body: JSON.stringify({
-            image_file_b64: base64Image,
-            size: "auto",
-            format: "png"
-        })
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Remove.bg API Error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    return data.data.result_b64;
-}
-
-async function zoomImage(imageBuffer: Buffer, zoomFactor: number): Promise<Buffer> {
-    const image = sharp(imageBuffer);
-    const metadata = await image.metadata();
-
-    if (!metadata.width || !metadata.height) {
-        throw new Error("Invalid image metadata");
-    }
-
-    const width = metadata.width;
-    const height = metadata.height;
-    const cropWidth = Math.floor(width / zoomFactor);
-    const cropHeight = Math.floor(height / zoomFactor);
-    const left = Math.floor((width - cropWidth) / 2);
-    const top = Math.floor((height - cropHeight) / 2);
-
-    return await image
-        .extract({ left, top, width: cropWidth, height: cropHeight })
-        .resize(width, height)
-        .toBuffer();
-}

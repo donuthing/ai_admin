@@ -7,7 +7,7 @@ interface PreviewRendererProps {
 
 export function PreviewRenderer({ metadata, blocks }: PreviewRendererProps) {
     return (
-        <div className="landing-page-container">
+        <div className={`landing-page-container${metadata.useButton && metadata.buttonName ? ' has-floating-button' : ''}`}>
             <header className="header-section">
                 <div className="header-image-container">
                     {metadata.imageUrl && (
@@ -17,7 +17,7 @@ export function PreviewRenderer({ metadata, blocks }: PreviewRendererProps) {
             </header>
             <div className="title-section">
                 <h1 className="header-title-1">{metadata.title1}</h1>
-                <h1 className="header-title-2" style={{ color: metadata.bgColor || '#A76B3B' }}>{metadata.title2}</h1>
+                <h1 className="header-title-2">{metadata.title2}</h1>
             </div>
 
             <div className="content-wrapper">
@@ -60,6 +60,12 @@ export function PreviewRenderer({ metadata, blocks }: PreviewRendererProps) {
                     }
                 })}
             </div>
+
+            {metadata.useButton && metadata.buttonName && (
+                <div className="floating-button-wrapper">
+                    <a href={metadata.buttonUrl || '#'}>{metadata.buttonName}</a>
+                </div>
+            )}
         </div>
     )
 }

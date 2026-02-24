@@ -25,7 +25,10 @@ export interface LandingPageMetadata {
     title2: string;
     bgColor: string;
     imageUrl?: string;
-
+    useButton?: boolean;
+    buttonName?: string;
+    buttonLandingType?: 'screenId' | 'url';
+    buttonUrl?: string;
 }
 
 export interface Block {
