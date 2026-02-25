@@ -40,7 +40,7 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
 
         setIsGenerating(true)
         try {
-            const result = await generateBaseGeulImage(prompt, true)
+            const result = await generateBaseGeulImage(prompt)
             if (result.success && result.imageUrl) {
                 setImageHistory(prev => [{ url: result.imageUrl!, keyword: prompt }, ...prev])
                 startTransition(() => {

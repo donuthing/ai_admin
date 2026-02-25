@@ -3,7 +3,6 @@
 import { GoogleGenAI } from "@google/genai";
 import fs from "fs/promises";
 import path from "path";
-import crypto from "crypto";
 
 
 const ICON_PROMPT_TEMPLATE = `Create a simplified 3D {keyword} icon.
@@ -73,29 +72,45 @@ no grid or list arrangement,
 no floating isolated objects,
 no text, no characters`;
 
-const REFERENCE_IMAGES = [
-    { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-cellphone.png" },
-    { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-clock.png" },
-    { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-coin3.png" },
-    { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-money1.png" },
-    { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-money2.png" },
-    { gcsUri: "gs://bc_k0gam_kv_v1/img-3d-travelbag.png" }
-];
+const REFERENCE_DIR = path.join(process.cwd(), "public", "reference-images");
 
-export async function generateBaseGeulImage(prompt: string, useIconGuide: boolean = false) {
+export async function generateBaseGeulImage(prompt: string) {
     try {
         const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-        let finalPrompt = prompt;
-
-        if (useIconGuide) {
-            finalPrompt = ICON_PROMPT_TEMPLATE.replace(/{keyword}/g, prompt);
-        }
+        const finalPrompt = ICON_PROMPT_TEMPLATE.replace(/{keyword}/g, prompt);
 
         // Gemini (Nano Banana) 모델로 이미지 생성
+        // 레퍼런스 이미지를 포함한 parts 배열 구성
+        const parts: any[] = [{ text: finalPrompt }];
+
+        // 폴더 내 모든 이미지를 base64로 읽어서 inlineData로 추가
+        try {
+            const files = await fs.readdir(REFERENCE_DIR);
+            const imageFiles = files.filter(f =>
+                /\.(png|jpg|jpeg|webp)$/i.test(f)
+            );
+            for (const filename of imageFiles) {
+                const filePath = path.join(REFERENCE_DIR, filename);
+                const fileBuffer = await fs.readFile(filePath);
+                const base64Data = fileBuffer.toString("base64");
+                const ext = path.extname(filename).toLowerCase();
+                const mimeType = ext === ".jpg" || ext === ".jpeg" ? "image/jpeg"
+                    : ext === ".webp" ? "image/webp" : "image/png";
+                parts.push({
+                    inlineData: { mimeType, data: base64Data },
+                });
+            }
+            if (imageFiles.length > 0) {
+                parts.push({ text: "위 레퍼런스 이미지들의 스타일을 참고하여 동일한 톤과 질감으로 생성해주세요." });
+            }
+        } catch (err) {
+            console.warn("레퍼런스 이미지 폴더 읽기 실패:", err);
+        }
+
         const response = await client.models.generateContent({
             model: 'gemini-2.5-flash-image',
-            contents: finalPrompt,
+            contents: [{ role: "user", parts }],
             config: {
                 responseModalities: ['IMAGE'],
             }
