@@ -113,7 +113,10 @@ export async function generateBaseGeulImage(prompt: string) {
             contents: [{ role: "user", parts }],
             config: {
                 responseModalities: ['IMAGE'],
-            }
+                imageConfig: {
+                    aspectRatio: '4:3',
+                },
+            } as any
         });
 
         // 응답에서 이미지 데이터 추출
