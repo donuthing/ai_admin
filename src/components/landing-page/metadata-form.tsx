@@ -22,12 +22,28 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
     const [keyword, setKeyword] = useState("")
     const [imageHistory, setImageHistory] = useState<{ url: string; keyword: string }[]>([])
 
+    const addToHistory = (url: string, keyword: string) => {
+        if (!url) return;
+        setImageHistory(prev => {
+            if (prev.some(item => item.url === url)) return prev;
+            return [{ url, keyword }, ...prev];
+        });
+    };
+
+    const handleDeleteImage = (url: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setImageHistory(prev => prev.filter(item => item.url !== url));
+    };
+
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
+            const fileName = file.name
             const reader = new FileReader()
             reader.onloadend = () => {
-                onChange({ ...metadata, imageUrl: reader.result as string })
+                const url = reader.result as string
+                onChange({ ...metadata, imageUrl: url })
+                addToHistory(url, fileName)
             }
             reader.readAsDataURL(file)
         }
@@ -42,7 +58,7 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
         try {
             const result = await generateBaseGeulImage(prompt)
             if (result.success && result.imageUrl) {
-                setImageHistory(prev => [{ url: result.imageUrl!, keyword: prompt }, ...prev])
+                addToHistory(result.imageUrl, prompt)
                 startTransition(() => {
                     onChange({ ...metadata, imageUrl: result.imageUrl })
                 })
@@ -106,6 +122,16 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                                 <Input
                                     value={metadata.imageUrl || ""}
                                     onChange={(e) => onChange({ ...metadata, imageUrl: e.target.value })}
+                                    onBlur={() => {
+                                        if (metadata.imageUrl && !metadata.imageUrl.startsWith("data:")) {
+                                            addToHistory(metadata.imageUrl, "URL Image")
+                                        }
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && metadata.imageUrl && !metadata.imageUrl.startsWith("data:")) {
+                                            addToHistory(metadata.imageUrl, "URL Image")
+                                        }
+                                    }}
                                     placeholder="https://example.com/hero-jpg"
                                     className="flex-1"
                                 />
@@ -193,14 +219,23 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                             <div>
                                 <div className="flex gap-2 flex-wrap">
                                     {imageHistory.map((item, index) => (
-                                        <button
+                                        <div
                                             key={index}
+                                            role="button"
+                                            tabIndex={0}
                                             onClick={() => {
                                                 startTransition(() => {
                                                     onChange({ ...metadata, imageUrl: item.url })
                                                 })
                                             }}
-                                            className={`relative group rounded-lg overflow-hidden border-2 transition-all hover:scale-105 shrink-0 grow-0 ${metadata.imageUrl === item.url
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    startTransition(() => {
+                                                        onChange({ ...metadata, imageUrl: item.url })
+                                                    })
+                                                }
+                                            }}
+                                            className={`relative group rounded-lg overflow-hidden border-2 transition-all hover:scale-105 shrink-0 grow-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${metadata.imageUrl === item.url
                                                 ? 'border-primary ring-2 ring-primary/30'
                                                 : 'border-border hover:border-primary/50'
                                                 }`}
@@ -212,12 +247,20 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                                                 alt={item.keyword}
                                                 className="w-full h-full object-cover"
                                             />
+                                            <button
+                                                type="button"
+                                                onClick={(e) => handleDeleteImage(item.url, e)}
+                                                className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70 z-10"
+                                                title="이미지 삭제"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
                                             {metadata.imageUrl === item.url && (
                                                 <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                                                     <Check className="h-5 w-5 text-white drop-shadow-md" />
                                                 </div>
                                             )}
-                                        </button>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
