@@ -448,8 +448,8 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
     ${metadata.useButton && metadata.buttonName ? `
     <div class="floating-button-wrapper">
         <a href="javascript:void(0)" onclick="${metadata.buttonLandingType === 'screenId'
-                ? `com.goNext('${metadata.buttonUrl || ''}')`
-                : `com.goNext('',{},'outlink','N','${metadata.buttonUrl || ''}','')`
+                ? `com.goNext('${metadata.buttonUrl || ''}', {}, false, 'new')`
+                : `com.goNext('',{},'','outlink','N','${metadata.buttonUrl || ''}','')`
             }">${metadata.buttonName}</a>
     </div>
     ` : ''}
