@@ -32,18 +32,6 @@ export function Sidebar() {
                         <FileText className="h-4 w-4" />
                         K공감
                     </Link>
-                    <Link
-                        href="/vip-webzine"
-                        className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
-                            pathname === "/vip-webzine"
-                                ? "bg-muted text-primary"
-                                : "text-muted-foreground"
-                        )}
-                    >
-                        <FileText className="h-4 w-4" />
-                        VIP 웹진
-                    </Link>
                 </nav>
             </div>
         </div>
