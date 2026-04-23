@@ -93,6 +93,8 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 line-height: normal;
                 margin: 0;
                 white-space: pre-line;
+                word-break: keep-all;
+                overflow-wrap: break-word;
             }
             .header-title-2 {
                 color: #070707;
@@ -104,6 +106,8 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 line-height: normal;
                 margin: 0;
                 white-space: pre-line;
+                word-break: keep-all;
+                overflow-wrap: break-word;
             }
 
             .header-image-container {
@@ -153,6 +157,8 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 font-weight: 700;
                 line-height: 28px;
                 margin: 0;
+                word-break: keep-all;
+                overflow-wrap: break-word;
             }
             .main-block .text-content {
                 color: #22252A;
@@ -163,6 +169,8 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 line-height: 26px;
                 width: 100%;
                 display: block;
+                word-break: keep-all;
+                overflow-wrap: break-word;
             }
             .main-block .text-content p {
                 margin: 0 0 15px 0;
@@ -233,6 +241,8 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 font-weight: 700;
                 line-height: 28px;
                 margin: 0;
+                word-break: keep-all;
+                overflow-wrap: break-word;
             }
             .benefit-list {
                 display: flex;
@@ -272,6 +282,8 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 font-weight: 700;
                 line-height: 26px;
                 flex: 1; /* Allow title to take up remaining space */
+                word-break: keep-all;
+                overflow-wrap: break-word;
             }
             .benefit-item .text-content {
                 align-self: stretch;
@@ -282,6 +294,7 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 font-weight: 400;
                 line-height: 26px;
                 word-break: keep-all;
+                overflow-wrap: break-word;
             }
             .benefit-item .text-content p {
                 margin: 0;
