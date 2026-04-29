@@ -179,7 +179,58 @@ export function BaseEditor({
                     if (data.metadata) setMetadata(data.metadata);
                     if (data.blocks) setBlocks(data.blocks);
                 } else {
-                    alert("편집 가능한 데이터가 포함되어 있지 않은 HTML 파일입니다.");
+                    // 구버전 HTML Fallback 파서
+                    const fallbackMetadata: any = { ...metadata };
+                    const fallbackBlocks: Block[] = [];
+
+                    const title1El = doc.querySelector('.header-title-1');
+                    if (title1El) fallbackMetadata.title1 = title1El.textContent || '';
+                    
+                    const title2El = doc.querySelector('.header-title-2');
+                    if (title2El) fallbackMetadata.title2 = title2El.textContent || '';
+
+                    const headerImgEl = doc.querySelector('.header-image');
+                    if (headerImgEl) fallbackMetadata.imageUrl = headerImgEl.getAttribute('src') || '';
+
+                    const buttonEl = doc.querySelector('.floating-button-wrapper a');
+                    if (buttonEl) {
+                        fallbackMetadata.useButton = true;
+                        fallbackMetadata.buttonName = buttonEl.textContent || '';
+                        const onclick = buttonEl.getAttribute('onclick') || '';
+                        const match = onclick.match(/'([^']+)'/);
+                        if (match) fallbackMetadata.buttonUrl = match[1];
+                    } else {
+                        fallbackMetadata.useButton = false;
+                    }
+
+                    const contentWrapper = doc.querySelector('.content-wrapper');
+                    if (contentWrapper) {
+                        Array.from(contentWrapper.children).forEach((child) => {
+                            const id = child.id || crypto.randomUUID();
+                            if (child.classList.contains('main-block')) {
+                                const title = child.querySelector('h2')?.textContent || '';
+                                const htmlContent = child.querySelector('.text-content')?.innerHTML || '';
+                                fallbackBlocks.push({ id, type: 'main', content: { title, content: htmlContent } });
+                            } else if (child.classList.contains('benefit-block')) {
+                                const title = child.querySelector('h2')?.textContent || '';
+                                const items: any[] = [];
+                                child.querySelectorAll('.benefit-item').forEach((itemEl) => {
+                                    const subtitle = itemEl.querySelector('h3')?.textContent || '';
+                                    const itemContent = itemEl.querySelector('.text-content')?.innerHTML || '';
+                                    items.push({ subtitle, content: itemContent });
+                                });
+                                fallbackBlocks.push({ id, type: 'benefit', content: { title, items } });
+                            } else if (child.classList.contains('image-block')) {
+                                const imageUrl = child.querySelector('img')?.getAttribute('src') || '';
+                                const caption = child.querySelector('.image-caption')?.textContent || '';
+                                fallbackBlocks.push({ id, type: 'image', content: { imageUrl, caption } });
+                            }
+                        });
+                    }
+
+                    setMetadata(fallbackMetadata);
+                    setBlocks(fallbackBlocks);
+                    alert("구버전 HTML 파일이 복원되었습니다.");
                 }
             } catch (error) {
                 console.error("Failed to parse uploaded file:", error);
