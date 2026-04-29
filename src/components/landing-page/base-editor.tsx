@@ -15,7 +15,7 @@ import {
     arrayMove,
     sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable"
-import { Plus, Download, X } from "lucide-react"
+import { Plus, Download, X, Upload } from "lucide-react"
 import { saveAs } from "file-saver"
 
 import { Button } from "@/components/ui/button"
@@ -57,6 +57,7 @@ export function BaseEditor({
     const [iframeBody, setIframeBody] = useState<HTMLElement | null>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
     const iframeRef = useRef<HTMLIFrameElement>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
     const prevBlocksLengthRef = useRef(blocks.length)
 
     // Defer the value updates to prioritize input responsiveness (fixes IME issues)
@@ -153,6 +154,41 @@ export function BaseEditor({
                 return arrayMove(items, oldIndex, newIndex)
             })
         }
+    }
+
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const isConfirmed = window.confirm("파일을 업로드하면 작성중이던 데이터가 삭제됩니다. 계속하시겠습니까?");
+        if (!isConfirmed) {
+            event.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const content = e.target?.result as string;
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(content, 'text/html');
+                const scriptTag = doc.getElementById('editor-data');
+                
+                if (scriptTag && scriptTag.textContent) {
+                    const data = JSON.parse(scriptTag.textContent);
+                    if (data.metadata) setMetadata(data.metadata);
+                    if (data.blocks) setBlocks(data.blocks);
+                } else {
+                    alert("편집 가능한 데이터가 포함되어 있지 않은 HTML 파일입니다.");
+                }
+            } catch (error) {
+                console.error("Failed to parse uploaded file:", error);
+                alert("파일을 읽는 중 오류가 발생했습니다.");
+            }
+        };
+        reader.readAsText(file);
+        // Reset input so the same file can be selected again if needed
+        event.target.value = '';
     }
 
     const handleDownload = () => {
@@ -268,10 +304,28 @@ export function BaseEditor({
                                 )}
                             </div>
                         </div>
-                        <Button onClick={handleDownload} className="w-full gap-2" size="lg">
-                            <Download className="h-4 w-4" />
-                            HTML 다운로드
-                        </Button>
+                        <div className="flex gap-2">
+                            <input 
+                                type="file" 
+                                accept=".html" 
+                                ref={fileInputRef} 
+                                style={{ display: 'none' }} 
+                                onChange={handleFileUpload}
+                            />
+                            <Button 
+                                onClick={() => fileInputRef.current?.click()} 
+                                style={{ backgroundColor: '#EBEEF7', color: '#3D609D' }} 
+                                className="w-1/2 gap-2 hover:opacity-90 transition-opacity" 
+                                size="lg"
+                            >
+                                <Upload className="h-4 w-4" />
+                                HTML 업로드
+                            </Button>
+                            <Button onClick={handleDownload} className="w-1/2 gap-2" size="lg">
+                                <Download className="h-4 w-4" />
+                                HTML 다운로드
+                            </Button>
+                        </div>
                     </div>
                 </div>
 

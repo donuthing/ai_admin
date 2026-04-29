@@ -7,7 +7,7 @@ export default function BuilderPage() {
         <AdminLayout>
             <div className="space-y-6">
                 <div>
-                    <h3 className="text-lg font-medium">K-공감</h3>
+                    <h3 className="text-lg font-medium">플레이북</h3>
 
                 </div>
                 <Separator />

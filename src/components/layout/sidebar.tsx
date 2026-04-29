@@ -15,7 +15,7 @@ export function Sidebar() {
             <div className="flex h-14 items-center px-6">
                 <Link href="/" className="flex items-center gap-2 font-semibold">
                     <div className="h-6 w-6 rounded-full bg-primary" />
-                    <span>Admin</span>
+                    <span>플레이북</span>
                 </Link>
             </div>
             <div className="flex-1 overflow-auto py-2">
@@ -30,7 +30,7 @@ export function Sidebar() {
                         )}
                     >
                         <FileText className="h-4 w-4" />
-                        K공감
+                        플레이북
                     </Link>
                 </nav>
             </div>

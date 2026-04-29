@@ -466,6 +466,10 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
             }">${metadata.buttonName}</a>
     </div>
     ` : ''}
+
+    <script id="editor-data" type="application/json">
+        ${JSON.stringify({ metadata, blocks }).replace(/<\/script>/g, '<\\/script>')}
+    </script>
 </body>
 </html>
     `.trim();
