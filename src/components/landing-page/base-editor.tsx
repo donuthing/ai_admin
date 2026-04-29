@@ -230,7 +230,6 @@ export function BaseEditor({
 
                     setMetadata(fallbackMetadata);
                     setBlocks(fallbackBlocks);
-                    alert("구버전 HTML 파일이 복원되었습니다.");
                 }
             } catch (error) {
                 console.error("Failed to parse uploaded file:", error);
