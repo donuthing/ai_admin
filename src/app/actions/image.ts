@@ -130,10 +130,10 @@ export async function generateBaseGeulImage(prompt: string) {
                         let imageBytes = part.inlineData.data;
                         const buffer = Buffer.from(imageBytes, 'base64');
                         
-                        // Sharp를 통한 이미지 압축 및 사이즈 조정 (1MB 이하 유지)
+                        // Sharp를 통한 이미지 사이즈 조정 및 최적화 (1MB 이하 유지)
                         const optimizedBuffer = await sharp(buffer)
-                            .resize(1024, null, { withoutEnlargement: true }) // 가로 1024px 제한
-                            .png({ quality: 80, palette: true }) // PNG 포맷, 용량 최적화 옵션 적용
+                            .resize(1170, null, { withoutEnlargement: true }) // 가로 1170px 제한 (레티나 대응)
+                            .png({ quality: 90, palette: true }) // PNG 포맷, 화질 90으로 상향 및 팔레트 적용
                             .toBuffer();
 
                         const optimizedBase64 = optimizedBuffer.toString('base64');
