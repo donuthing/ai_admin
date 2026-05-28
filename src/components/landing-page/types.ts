@@ -29,6 +29,7 @@ export interface LandingPageMetadata {
     buttonName?: string;
     buttonLandingType?: 'screenId' | 'url';
     buttonUrl?: string;
+    buttonParams?: string;
 }
 
 export interface Block {
