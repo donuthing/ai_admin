@@ -328,6 +328,8 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 box-sizing: border-box;
                 z-index: 100;
                 background: #FFF;
+                display: flex;
+                gap: 8px;
             }
             .has-floating-button {
                 padding-bottom: 80px;
@@ -358,9 +360,15 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 font-style: normal;
                 font-weight: 700;
                 line-height: 26px;
+                text-align: center;
                 text-decoration: none;
                 box-sizing: border-box;
                 cursor: pointer;
+            }
+            /* 좌측(두 번째) 버튼 스타일 */
+            .floating-button-wrapper a.secondary {
+                background: rgba(204, 213, 235, 0.40);
+                color: #3D609D;
             }
         </style>
     `;
@@ -442,7 +450,7 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
     ` : ''}
 </head>
 <body>
-    <div class="landing-page-container${metadata.useButton && metadata.buttonName ? ' has-floating-button' : ''}">
+    <div class="landing-page-container${(metadata.buttons || []).some(b => b.name) ? ' has-floating-button' : ''}">
         <header class="header-section">
             <div class="header-image-container">
                 ${metadata.imageUrl ? `<img src="${metadata.imageUrl}" class="header-image" alt="Header illustration" />` : ''}
@@ -458,14 +466,30 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
         </div>
     </div>
 
-    ${metadata.useButton && metadata.buttonName ? `
+    ${(() => {
+        const renderButton = (btn: { name: string; landingType: 'screenId' | 'url'; url: string; params?: string }, isSecondary: boolean) => {
+            const onclick = btn.landingType === 'screenId'
+                ? `com.goNext('${btn.url || ''}', '${btn.params || ''}', false, 'new')`
+                : `com.goNext('',{},'','outlink','N','${btn.url || ''}','')`;
+            const cls = isSecondary ? ' class="secondary"' : '';
+            return `<a href="javascript:void(0)"${cls} onclick="${onclick}">${btn.name}</a>`;
+        };
+
+        // 배열 첫 번째(버튼1)가 화면 우측, 두 번째(버튼2, secondary)가 좌측 → flex row 기준 역순 배치
+        const rendered = (metadata.buttons || [])
+            .map((btn, idx) => ({ btn, isSecondary: idx >= 1 }))
+            .filter(x => x.btn.name)
+            .slice()
+            .reverse()
+            .map(x => renderButton(x.btn, x.isSecondary))
+            .join('\n        ');
+
+        return rendered ? `
     <div class="floating-button-wrapper">
-        <a href="javascript:void(0)" onclick="${metadata.buttonLandingType === 'screenId'
-                ? `com.goNext('${metadata.buttonUrl || ''}', '${metadata.buttonParams || ''}', false, 'new')`
-                : `com.goNext('',{},'','outlink','N','${metadata.buttonUrl || ''}','')`
-            }">${metadata.buttonName}</a>
+        ${rendered}
     </div>
-    ` : ''}
+    ` : '';
+    })()}
 
     <script id="editor-data" type="application/json">
         ${JSON.stringify({ metadata, blocks }).replace(/<\/script>/g, '<\\/script>')}

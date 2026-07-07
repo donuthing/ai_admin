@@ -192,16 +192,20 @@ export function BaseEditor({
                     const headerImgEl = doc.querySelector('.header-image');
                     if (headerImgEl) fallbackMetadata.imageUrl = headerImgEl.getAttribute('src') || '';
 
-                    const buttonEl = doc.querySelector('.floating-button-wrapper a');
-                    if (buttonEl) {
-                        fallbackMetadata.useButton = true;
-                        fallbackMetadata.buttonName = buttonEl.textContent || '';
-                        const onclick = buttonEl.getAttribute('onclick') || '';
-                        const match = onclick.match(/'([^']+)'/);
-                        if (match) fallbackMetadata.buttonUrl = match[1];
-                    } else {
-                        fallbackMetadata.useButton = false;
-                    }
+                    const buttonEls = Array.from(doc.querySelectorAll('.floating-button-wrapper a'));
+                    const parsedButtons = buttonEls.map((el) => {
+                        const name = el.textContent || '';
+                        const onclick = el.getAttribute('onclick') || '';
+                        const quoted = Array.from(onclick.matchAll(/'([^']*)'/g)).map((m) => m[1]);
+                        if (onclick.includes('outlink')) {
+                            // URL 타입: com.goNext('',{},'','outlink','N','<url>','')
+                            return { name, landingType: 'url' as const, url: quoted[quoted.length - 2] || '', params: '' };
+                        }
+                        // 화면ID 타입: com.goNext('<url>', '<params>', false, 'new')
+                        return { name, landingType: 'screenId' as const, url: quoted[0] || '', params: quoted[1] || '' };
+                    });
+                    // DOM 순서는 배열의 역순(첫 버튼=우측)이므로 되돌려서 복원
+                    fallbackMetadata.buttons = parsedButtons.reverse();
 
                     const contentWrapper = doc.querySelector('.content-wrapper');
                     if (contentWrapper) {

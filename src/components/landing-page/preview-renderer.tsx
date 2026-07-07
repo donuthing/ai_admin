@@ -7,7 +7,7 @@ interface PreviewRendererProps {
 
 export function PreviewRenderer({ metadata, blocks }: PreviewRendererProps) {
     return (
-        <div className={`landing-page-container${metadata.useButton && metadata.buttonName ? ' has-floating-button' : ''}`}>
+        <div className={`landing-page-container${(metadata.buttons || []).some(b => b.name) ? ' has-floating-button' : ''}`}>
             <header className="header-section">
                 <div className="header-image-container">
                     {metadata.imageUrl && (
@@ -61,9 +61,16 @@ export function PreviewRenderer({ metadata, blocks }: PreviewRendererProps) {
                 })}
             </div>
 
-            {metadata.useButton && metadata.buttonName && (
+            {(metadata.buttons || []).some(b => b.name) && (
                 <div className="floating-button-wrapper">
-                    <a href={metadata.buttonUrl || '#'}>{metadata.buttonName}</a>
+                    {(metadata.buttons || [])
+                        .map((b, idx) => ({ b, idx }))
+                        .filter((x) => x.b.name)
+                        .slice()
+                        .reverse()
+                        .map(({ b, idx }) => (
+                            <a key={idx} className={idx >= 1 ? 'secondary' : undefined} href={b.url || '#'}>{b.name}</a>
+                        ))}
                 </div>
             )}
         </div>

@@ -4,10 +4,9 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
-import { LandingPageMetadata } from "./types"
-import { Upload, Wand2, Loader2, X, Calendar as CalendarIcon, FileType, Check } from "lucide-react"
+import { LandingButton, LandingPageMetadata } from "./types"
+import { Upload, Wand2, Loader2, X, Calendar as CalendarIcon, FileType, Check, Plus } from "lucide-react"
 import { generateBaseGeulImage } from "@/app/actions/image"
-import { Toggle } from "@/components/ui/toggle"
 
 interface MetadataFormProps {
     metadata: LandingPageMetadata;
@@ -72,6 +71,80 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
             setIsGenerating(false)
         }
     }
+
+    const buttons: LandingButton[] = metadata.buttons || [];
+
+    const addButton = () => {
+        if (buttons.length >= 2) return;
+        onChange({ ...metadata, buttons: [...buttons, { name: '', landingType: 'url', url: '', params: '' }] });
+    };
+
+    const removeButton = (index: number) => {
+        onChange({ ...metadata, buttons: buttons.filter((_, i) => i !== index) });
+    };
+
+    const updateButton = (index: number, patch: Partial<LandingButton>) => {
+        onChange({ ...metadata, buttons: buttons.map((b, i) => (i === index ? { ...b, ...patch } : b)) });
+    };
+
+    // 버튼 설정 필드 렌더러 (index: 배열 인덱스. 0=화면 우측, 1=좌측 ...)
+    const renderButtonFields = (button: LandingButton, index: number) => {
+        const landingType = button.landingType || 'url';
+
+        return (
+            <div key={index} className="space-y-3 rounded-lg border border-border/60 p-4">
+                <div className="flex items-center justify-between">
+                    <Label className="text-sm text-muted-foreground">버튼 {index + 1}</Label>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-muted-foreground hover:text-destructive"
+                        onClick={() => removeButton(index)}
+                    >
+                        <X className="h-4 w-4 mr-1" /> 삭제
+                    </Button>
+                </div>
+                <Input
+                    value={button.name}
+                    onChange={(e) => updateButton(index, { name: e.target.value })}
+                    placeholder="버튼명을 입력하세요"
+                />
+                <div className="flex gap-2">
+                    <select
+                        value={landingType}
+                        onChange={(e) => updateButton(index, { landingType: e.target.value as 'screenId' | 'url', url: '', params: '' })}
+                        className="flex h-10 w-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23888%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_8px_center] bg-no-repeat pr-7 shrink-0"
+                    >
+                        <option value="screenId">화면ID</option>
+                        <option value="url">URL</option>
+                    </select>
+                    {landingType === 'screenId' ? (
+                        <>
+                            <Input
+                                value={button.url}
+                                onChange={(e) => updateButton(index, { url: e.target.value })}
+                                placeholder="화면 ID를 입력하세요"
+                                className="flex-1"
+                            />
+                            <Input
+                                value={button.params || ''}
+                                onChange={(e) => updateButton(index, { params: e.target.value })}
+                                placeholder="파라미터 (문자열)"
+                                className="flex-1"
+                            />
+                        </>
+                    ) : (
+                        <Input
+                            value={button.url}
+                            onChange={(e) => updateButton(index, { url: e.target.value })}
+                            placeholder="https://example.com"
+                            className="flex-1"
+                        />
+                    )}
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className="space-y-4">
@@ -268,66 +341,17 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
                     </div>
 
                     <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                            <Label>Button</Label>
-                            <button
-                                type="button"
-                                role="switch"
-                                aria-checked={metadata.useButton === true}
-                                onClick={() => {
-                                    const next = !metadata.useButton;
-                                    onChange({ ...metadata, useButton: next, ...(next ? { buttonLandingType: metadata.buttonLandingType || 'url' } : { buttonName: '', buttonUrl: '' }) });
-                                }}
-                                className={`relative inline-flex h-[22px] w-[42px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 ${metadata.useButton ? 'bg-primary' : 'bg-gray-300'
-                                    }`}
+                        <Label>Button</Label>
+                        {buttons.map((button, index) => renderButtonFields(button, index))}
+                        {buttons.length < 2 && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full border-dashed"
+                                onClick={addButton}
                             >
-                                <span
-                                    className={`inline-block h-[18px] w-[18px] rounded-full bg-white shadow-md transform transition-transform duration-200 mt-[2px] ${metadata.useButton ? 'translate-x-[22px]' : 'translate-x-[2px]'
-                                        }`}
-                                />
-                            </button>
-                        </div>
-                        {metadata.useButton && (
-                            <div className="space-y-3">
-                                <Input
-                                    value={metadata.buttonName || ''}
-                                    onChange={(e) => onChange({ ...metadata, buttonName: e.target.value })}
-                                    placeholder="버튼명을 입력하세요"
-                                />
-                                <div className="flex gap-2">
-                                    <select
-                                        value={metadata.buttonLandingType || 'url'}
-                                        onChange={(e) => onChange({ ...metadata, buttonLandingType: e.target.value as 'screenId' | 'url', buttonUrl: '', buttonParams: '' })}
-                                        className="flex h-10 w-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23888%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_8px_center] bg-no-repeat pr-7 shrink-0"
-                                    >
-                                        <option value="screenId">화면ID</option>
-                                        <option value="url">URL</option>
-                                    </select>
-                                    {metadata.buttonLandingType === 'screenId' ? (
-                                        <>
-                                            <Input
-                                                value={metadata.buttonUrl || ''}
-                                                onChange={(e) => onChange({ ...metadata, buttonUrl: e.target.value })}
-                                                placeholder="화면 ID를 입력하세요"
-                                                className="flex-1"
-                                            />
-                                            <Input
-                                                value={metadata.buttonParams || ''}
-                                                onChange={(e) => onChange({ ...metadata, buttonParams: e.target.value })}
-                                                placeholder="파라미터 (문자열)"
-                                                className="flex-1"
-                                            />
-                                        </>
-                                    ) : (
-                                        <Input
-                                            value={metadata.buttonUrl || ''}
-                                            onChange={(e) => onChange({ ...metadata, buttonUrl: e.target.value })}
-                                            placeholder="https://example.com"
-                                            className="flex-1"
-                                        />
-                                    )}
-                                </div>
-                            </div>
+                                <Plus className="h-4 w-4 mr-1" /> 버튼 추가
+                            </Button>
                         )}
                     </div>
                 </CardContent>
