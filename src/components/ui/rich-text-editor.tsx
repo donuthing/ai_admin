@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react'
 import { getMarkRange } from '@tiptap/core'
 import { TextSelection } from '@tiptap/pm/state'
@@ -29,6 +29,14 @@ const EMPTY_DRAFT: LinkDraft = { landingType: 'url', url: '', params: '' }
 export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
     const [isLinkFormOpen, setIsLinkFormOpen] = useState(false)
     const [linkDraft, setLinkDraft] = useState<LinkDraft>(EMPTY_DRAFT)
+    // 링크 폼을 연 시점의 선택 영역. 선택이 이 범위를 벗어나면 폼을 닫고 입력값을 버린다.
+    const linkRangeRef = useRef<{ from: number; to: number } | null>(null)
+
+    const closeLinkForm = () => {
+        setIsLinkFormOpen(false)
+        setLinkDraft(EMPTY_DRAFT)
+        linkRangeRef.current = null
+    }
 
     const editor = useEditor({
         extensions: [
@@ -59,6 +67,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
                     url: mark?.attrs.url || '',
                     params: mark?.attrs.params || '',
                 })
+                linkRangeRef.current = { from: range.from, to: range.to }
                 setIsLinkFormOpen(true)
 
                 view.dispatch(
@@ -70,16 +79,44 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
         },
     })
 
+    // 선택 영역이 폼을 연 범위를 벗어나면 입력 중이던 값을 저장하지 않고 폼을 닫는다.
+    useEffect(() => {
+        if (!editor) return
+
+        const handleSelectionUpdate = () => {
+            const range = linkRangeRef.current
+            if (!range) return
+
+            const { from, to } = editor.state.selection
+            if (range.from !== from || range.to !== to) {
+                closeLinkForm()
+            }
+        }
+
+        editor.on('selectionUpdate', handleSelectionUpdate)
+        return () => {
+            editor.off('selectionUpdate', handleSelectionUpdate)
+        }
+    }, [editor])
+
+    // 폼이 열고 닫히며 메뉴 높이가 바뀌지만 tippy(popper)는 그 사실을 모른다.
+    // placement가 'top'이라 메뉴가 위로 자라며 잘리므로, 렌더 후 resize를 알려 위치를 다시 계산하게 한다.
+    useEffect(() => {
+        const raf = requestAnimationFrame(() => window.dispatchEvent(new Event('resize')))
+        return () => cancelAnimationFrame(raf)
+    }, [isLinkFormOpen, linkDraft.landingType])
+
     if (!editor) {
         return null
     }
 
     const isLinkActive = editor.isActive('landingLink')
 
-    // 링크 아이콘 토글: 열 때는 현재 선택 영역의 링크 정보를 불러와 채운다.
+    // 링크 아이콘 토글: 열 때는 현재 선택 영역의 링크 정보를 불러와 채우고,
+    // 닫을 때는 적용하지 않은 입력값을 버린다.
     const toggleLinkForm = () => {
         if (isLinkFormOpen) {
-            setIsLinkFormOpen(false)
+            closeLinkForm()
             return
         }
         const attrs = editor.getAttributes('landingLink')
@@ -88,6 +125,8 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
             url: attrs.url || '',
             params: attrs.params || '',
         })
+        const { from, to } = editor.state.selection
+        linkRangeRef.current = { from, to }
         setIsLinkFormOpen(true)
     }
 
@@ -103,13 +142,12 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
                 params: linkDraft.landingType === 'screenId' ? linkDraft.params.trim() : '',
             })
             .run()
-        setIsLinkFormOpen(false)
+        closeLinkForm()
     }
 
     const removeLink = () => {
         editor.chain().focus().unsetLandingLink().run()
-        setLinkDraft(EMPTY_DRAFT)
-        setIsLinkFormOpen(false)
+        closeLinkForm()
     }
 
     return (
