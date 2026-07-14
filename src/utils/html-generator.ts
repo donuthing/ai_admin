@@ -18,6 +18,47 @@ export const hexToRgb = (hex: string) => {
     } : { r: 0, g: 0, b: 0 }; // Default to black if invalid
 }
 
+// 작은따옴표로 감싼 JS 문자열 리터럴 안에 넣기 위한 이스케이프
+const escapeJsString = (value: string) => (value || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+// 큰따옴표로 감싼 HTML 속성값 안에 넣기 위한 이스케이프
+const escapeAttr = (value: string) => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+
+// 랜딩 타입(화면ID/URL)에 따른 com.goNext 호출식. 플로팅 버튼과 본문 텍스트 링크가 공유한다.
+const buildGoNextCall = (landingType: 'screenId' | 'url', target: string, params?: string) =>
+    landingType === 'screenId'
+        ? `com.goNext('${escapeJsString(target)}', '${escapeJsString(params || '')}', false, 'new')`
+        : `com.goNext('',{},'','outlink','N','${escapeJsString(target)}','')`;
+
+const decodeAttr = (value: string) =>
+    value
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&');
+
+const getAttr = (attrs: string, name: string) => {
+    const match = new RegExp(`${name}\\s*=\\s*"([^"]*)"|${name}\\s*=\\s*'([^']*)'`, 'i').exec(attrs);
+    return match ? decodeAttr(match[1] ?? match[2] ?? '') : '';
+};
+
+/**
+ * TipTap이 저장한 본문 HTML의 링크(<a data-landing-type=...>)에 com.goNext onclick을 붙인다.
+ * 편집기에는 랜딩 정보만 data-* 속성으로 저장되고, 실제 호출 코드는 여기서 생성된다.
+ */
+export const processRichTextLinks = (html: string): string =>
+    (html || '').replace(/<a\s([^>]*)>/gi, (match, attrs: string) => {
+        const landingType = getAttr(attrs, 'data-landing-type');
+        if (landingType !== 'screenId' && landingType !== 'url') return match;
+
+        const target = getAttr(attrs, 'data-url');
+        const params = getAttr(attrs, 'data-params');
+        const onclick = buildGoNextCall(landingType, target, params);
+
+        return `<a href="javascript:void(0)" class="text-link" onclick="${escapeAttr(onclick)}">`;
+    });
+
 export const getPreviewStyles = (metadata: LandingPageMetadata) => {
     const bgColor = '#D38674';
     const rgb = hexToRgb(bgColor);
@@ -314,6 +355,14 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
                 padding: 0 2px;
                 border-radius: 2px;
             }
+            /* 본문 텍스트 링크 */
+            .main-block .text-content a, .benefit-item .text-content a,
+            .main-block .text-content a.text-link, .benefit-item .text-content a.text-link {
+                color: #2D8DFF;
+                text-decoration: underline;
+                text-underline-offset: 2px;
+                cursor: pointer;
+            }
 
             /* Floating Button */
             .floating-button-wrapper {
@@ -381,8 +430,8 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
         switch (block.type) {
             case 'main':
                 const mainContent = block.content as any;
-                // TipTap returns HTML, so we use it directly
-                const processedContent = mainContent.content;
+                // TipTap이 넘긴 HTML을 그대로 쓰되, 텍스트 링크에만 com.goNext onclick을 주입한다.
+                const processedContent = processRichTextLinks(mainContent.content);
 
                 return `
                     <div class="main-block" id="${block.id}">
@@ -402,7 +451,7 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
                                         ${item.subtitle ? `<div class="benefit-badge">${index + 1}</div>` : ''}
                                         <h3>${item.subtitle}</h3>
                                     </div>
-                                    <div class="text-content">${item.content}</div>
+                                    <div class="text-content">${processRichTextLinks(item.content)}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -468,11 +517,9 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
 
     ${(() => {
         const renderButton = (btn: { name: string; landingType: 'screenId' | 'url'; url: string; params?: string }, isSecondary: boolean) => {
-            const onclick = btn.landingType === 'screenId'
-                ? `com.goNext('${btn.url || ''}', '${btn.params || ''}', false, 'new')`
-                : `com.goNext('',{},'','outlink','N','${btn.url || ''}','')`;
+            const onclick = buildGoNextCall(btn.landingType, btn.url, btn.params);
             const cls = isSecondary ? ' class="secondary"' : '';
-            return `<a href="javascript:void(0)"${cls} onclick="${onclick}">${btn.name}</a>`;
+            return `<a href="javascript:void(0)"${cls} onclick="${escapeAttr(onclick)}">${btn.name}</a>`;
         };
 
         // 배열 첫 번째(버튼1)가 화면 우측, 두 번째(버튼2, secondary)가 좌측 → flex row 기준 역순 배치

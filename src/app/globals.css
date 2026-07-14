@@ -101,4 +101,13 @@
     @apply bg-background text-foreground;
     font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
   }
+
+}
+
+/* 편집기 안에서도 사용자 화면과 동일하게 링크를 표시 (레이어 밖에 두어 preflight보다 우선) */
+.ProseMirror a.text-link {
+  color: #2D8DFF;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
 }
