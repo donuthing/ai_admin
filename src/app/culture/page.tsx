@@ -1,17 +1,17 @@
 import { AdminLayout } from "@/components/layout/admin-layout"
-import { KGonggamEditor } from "@/components/landing-page/editors/k-gonggam"
+import { CultureEditor } from "@/components/landing-page/editors/culture"
 import { Separator } from "@/components/ui/separator"
 
-export default function BuilderPage() {
+export default function CulturePage() {
     return (
         <AdminLayout>
             <div className="space-y-6">
                 <div>
-                    <h3 className="text-lg font-medium">정부혜택</h3>
+                    <h3 className="text-lg font-medium">문화</h3>
 
                 </div>
                 <Separator />
-                <KGonggamEditor />
+                <CultureEditor />
             </div>
         </AdminLayout>
     )

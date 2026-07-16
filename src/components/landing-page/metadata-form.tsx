@@ -11,9 +11,10 @@ import { generateBaseGeulImage } from "@/app/actions/image"
 interface MetadataFormProps {
     metadata: LandingPageMetadata;
     onChange: (metadata: LandingPageMetadata) => void;
+    imageHint?: string;
 }
 
-export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
+export function MetadataForm({ metadata, onChange, imageHint }: MetadataFormProps) {
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const [isGenerating, setIsGenerating] = useState(false)
@@ -173,7 +174,12 @@ export function MetadataForm({ metadata, onChange }: MetadataFormProps) {
 
 
                     <div className="space-y-4">
-                        <Label>Image</Label>
+                        <div className="flex items-center gap-2">
+                            <Label>Image</Label>
+                            {imageHint && (
+                                <span className="text-xs text-muted-foreground">{imageHint}</span>
+                            )}
+                        </div>
                         <div className="flex gap-2">
                             {metadata.imageUrl?.startsWith("data:") ? (
                                 <div className="relative flex-1">

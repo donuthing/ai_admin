@@ -423,7 +423,9 @@ export const getPreviewStyles = (metadata: LandingPageMetadata) => {
     `;
 }
 
-export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isPreview: boolean = false): string => {
+// includeEditorData: 편집 데이터(editor-data)를 산출물에 심을지 여부.
+// 임시저장본은 true여야 HTML 업로드로 이어서 편집할 수 있고, 최종본은 false로 데이터를 뺀다.
+export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isPreview: boolean = false, hideHeaderSection: boolean = false, includeEditorData: boolean = true): string => {
     const styles = getPreviewStyles(metadata);
 
     const renderBlock = (block: Block) => {
@@ -500,7 +502,7 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
 </head>
 <body>
     <div class="landing-page-container${(metadata.buttons || []).some(b => b.name) ? ' has-floating-button' : ''}">
-        <header class="header-section">
+        <header ${hideHeaderSection ? `style="display:none;" ` : ''}class="header-section">
             <div class="header-image-container">
                 ${metadata.imageUrl ? `<img src="${metadata.imageUrl}" class="header-image" alt="Header illustration" />` : ''}
             </div>
@@ -538,9 +540,9 @@ export const generateHtml = (metadata: LandingPageMetadata, blocks: Block[], isP
     ` : '';
     })()}
 
-    <script id="editor-data" type="application/json">
+    ${includeEditorData ? `<script id="editor-data" type="application/json">
         ${JSON.stringify({ metadata, blocks }).replace(/<\/script>/g, '<\\/script>')}
-    </script>
+    </script>` : ''}
 </body>
 </html>
     `.trim();

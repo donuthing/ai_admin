@@ -24,6 +24,7 @@ import { BlockList } from "./block-list"
 import { MetadataForm } from "./metadata-form"
 import { generateHtml, getPreviewStyles } from "@/utils/html-generator"
 import { PreviewRenderer } from "./preview-renderer"
+import { SaveDialog } from "./save-dialog"
 
 import { Slider } from "@/components/ui/slider"
 
@@ -32,6 +33,11 @@ interface BaseEditorProps {
     initialBlocks?: Block[]
     availableBlocks?: BlockType[]
     defaultBlockContent?: Partial<Record<BlockType, any>>
+    // 다운로드 산출물의 header에 display:none을 붙인다(호스트 앱이 자체 헤더를 그리는 경우).
+    // 미리보기는 편집 확인용이므로 영향받지 않고 이미지가 그대로 보인다.
+    hideHeaderSection?: boolean
+    // 기본 정보 Image 입력 영역에 표시할 힌트 문구
+    imageHint?: string
 }
 
 const DEFAULT_METADATA: LandingPageMetadata = {
@@ -48,12 +54,15 @@ export function BaseEditor({
     initialMetadata = DEFAULT_METADATA,
     initialBlocks = [],
     availableBlocks = ['main', 'benefit', 'image'],
-    defaultBlockContent = {}
+    defaultBlockContent = {},
+    hideHeaderSection = false,
+    imageHint
 }: BaseEditorProps) {
     const [metadata, setMetadata] = useState<LandingPageMetadata>(initialMetadata)
     const [blocks, setBlocks] = useState<Block[]>(initialBlocks)
     const [previewWidth, setPreviewWidth] = useState(390)
     const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
+    const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false)
     const [iframeBody, setIframeBody] = useState<HTMLElement | null>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
     const iframeRef = useRef<HTMLIFrameElement>(null)
@@ -245,13 +254,17 @@ export function BaseEditor({
         event.target.value = '';
     }
 
-    const handleDownload = () => {
+    // 임시 파일은 editor-data를 남겨 HTML 업로드로 이어서 편집할 수 있게 하고,
+    // 최종 파일은 editor-data를 빼서 배포용 산출물만 남긴다.
+    const handleSave = (mode: 'draft' | 'final') => {
+        setIsSaveDialogOpen(false)
         try {
-            const html = generateHtml(metadata, blocks)
+            const isDraft = mode === 'draft'
+            const html = generateHtml(metadata, blocks, false, hideHeaderSection, isDraft)
             const blob = new Blob(['\uFEFF', html], { type: "text/html;charset=utf-8" })
-            saveAs(blob, `landing-page-${new Date().getTime()}.html`)
+            saveAs(blob, `${isDraft ? 'temp-' : ''}landing-page-${new Date().getTime()}.html`)
         } catch (error) {
-            console.error("Download failed:", error)
+            console.error("Save failed:", error)
             alert("파일 생성 중 오류가 발생했습니다.")
         }
     }
@@ -263,7 +276,7 @@ export function BaseEditor({
                 <div className="space-y-8 lg:col-span-3">
 
 
-                    <MetadataForm metadata={metadata} onChange={setMetadata} />
+                    <MetadataForm metadata={metadata} onChange={setMetadata} imageHint={imageHint} />
 
                     <div className="space-y-4">
                         {blocks.length > 0 && (
@@ -366,16 +379,16 @@ export function BaseEditor({
                                 style={{ display: 'none' }} 
                                 onChange={handleFileUpload}
                             />
-                            <Button 
-                                onClick={() => fileInputRef.current?.click()} 
-                                style={{ backgroundColor: '#EBEEF7', color: '#3D609D' }} 
-                                className="w-1/2 gap-2 hover:opacity-90 transition-opacity" 
+                            <Button
+                                onClick={() => fileInputRef.current?.click()}
+                                style={{ backgroundColor: '#EBEEF7', color: '#3D609D' }}
+                                className="w-1/2 gap-2 hover:opacity-90 transition-opacity"
                                 size="lg"
                             >
                                 <Upload className="h-4 w-4" />
                                 HTML 업로드
                             </Button>
-                            <Button onClick={handleDownload} className="w-1/2 gap-2" size="lg">
+                            <Button onClick={() => setIsSaveDialogOpen(true)} className="w-1/2 gap-2" size="lg">
                                 <Download className="h-4 w-4" />
                                 HTML 다운로드
                             </Button>
@@ -384,6 +397,13 @@ export function BaseEditor({
                 </div>
 
             </div>
+
+            <SaveDialog
+                open={isSaveDialogOpen}
+                onClose={() => setIsSaveDialogOpen(false)}
+                onSaveDraft={() => handleSave('draft')}
+                onSaveFinal={() => handleSave('final')}
+            />
         </div>
     )
 }

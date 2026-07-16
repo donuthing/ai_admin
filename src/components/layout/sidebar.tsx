@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, FileText, Settings } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -14,7 +13,7 @@ export function Sidebar() {
         <div className="sticky top-0 flex h-screen w-64 flex-col border-r bg-background/60 backdrop-blur-xl">
             <div className="flex h-14 items-center px-6">
                 <Link href="/" className="flex items-center gap-2 font-semibold">
-                    <div className="h-6 w-6 rounded-full bg-primary" />
+                    <img src="/paybooc-ci.svg" alt="paybooc" className="h-6 w-6" />
                     <span>플레이북</span>
                 </Link>
             </div>
@@ -29,8 +28,18 @@ export function Sidebar() {
                                 : "text-muted-foreground"
                         )}
                     >
-                        <FileText className="h-4 w-4" />
-                        플레이북
+                        정부혜택
+                    </Link>
+                    <Link
+                        href="/culture"
+                        className={cn(
+                            "flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary",
+                            pathname === "/culture"
+                                ? "bg-muted text-primary"
+                                : "text-muted-foreground"
+                        )}
+                    >
+                        문화
                     </Link>
                 </nav>
             </div>
